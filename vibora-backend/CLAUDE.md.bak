@@ -1,0 +1,565 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Vibora is a **modular monolith** ASP.NET Core 9 application for padel/tennis game matchmaking, built with Clean Architecture, Domain-Driven Design (DDD), and CQRS principles. The architecture enables future migration to microservices while maintaining current simplicity.
+
+## Development Commands
+
+### Build and Run
+```bash
+# Build entire solution
+dotnet build Vibora.sln
+
+# Run application with Aspire orchestration (recommended)
+dotnet run --project src/Vibora.AppHost/Vibora.AppHost.csproj
+
+# Run web API directly
+dotnet run --project src/Vibora.Web/Vibora.Web.csproj
+```
+
+### Testing
+```bash
+# Run all tests
+dotnet test
+
+# Run specific test project
+dotnet test tests/Vibora.Integration.Tests/Vibora.Integration.Tests.csproj
+dotnet test src/modules/Games/Vibora.Games.Tests/Vibora.Games.Tests.csproj
+
+# Run single test class
+dotnet test --filter FullyQualifiedName~CreateGameIntegrationTests
+
+# Integration tests require Docker (uses TestContainers for PostgreSQL)
+```
+
+### Database Migrations
+
+**IMPORTANT**: Always use `Vibora.MigrationService` as startup project for EF Core commands.
+
+```bash
+# Add new migration for Games module
+dotnet ef migrations add MigrationName \
+  --project src/modules/Games/Vibora.Games/Vibora.Games.csproj \
+  --startup-project src/Vibora.MigrationService/Vibora.MigrationService.csproj \
+  --context GamesDbContext \
+  --output-dir Infrastructure/Data/Migrations
+
+# Add new migration for Users module
+dotnet ef migrations add MigrationName \
+  --project src/modules/Users/Vibora.Users/Vibora.Users.csproj \
+  --startup-project src/Vibora.MigrationService/Vibora.MigrationService.csproj \
+  --context UsersDbContext \
+  --output-dir Infrastructure/Data/Migrations
+
+# Add new migration for Notifications module
+dotnet ef migrations add MigrationName \
+  --project src/modules/Notifications/Vibora.Notifications/Vibora.Notifications.csproj \
+  --startup-project src/Vibora.MigrationService/Vibora.MigrationService.csproj \
+  --context NotificationsDbContext \
+  --output-dir Infrastructure/Data/Migrations
+
+# Migrations run automatically on startup via Vibora.MigrationService worker
+```
+
+## Architecture Overview
+
+### Modular Monolith Structure
+
+The codebase is organized into **self-contained modules** following the Ardalis modular monolith pattern:
+
+```
+src/
+├── Vibora.AppHost/              # .NET Aspire orchestration
+├── Vibora.Web/                  # Web API host (composition root)
+├── Vibora.MigrationService/     # EF Core migrations orchestrator
+├── Vibora.ServiceDefaults/      # Aspire service defaults
+├── Vibora.Shared/               # Shared kernel (AggregateRoot, UnitOfWork, ResultExtensions)
+└── modules/
+    ├── Games/                   # Game management bounded context
+    │   ├── Vibora.Games/        # Core module (internal by default)
+    │   ├── Vibora.Games.Contracts/  # Public events/DTOs
+    │   └── Vibora.Games.Tests/
+    ├── Users/                   # User management bounded context
+    │   ├── Vibora.Users/
+    │   ├── Vibora.Users.Contracts/
+    │   └── Vibora.Users.Tests/
+    ├── Notifications/           # Notifications bounded context
+    │   ├── Vibora.Notifications/
+    │   ├── Vibora.Notifications.Contracts/
+    │   └── Vibora.Notifications.Tests/
+    └── Communication/           # Chat (future)
+        ├── Vibora.Communication/
+        └── Vibora.Communication.Contracts/
+```
+
+### Clean Architecture Layers (per module)
+
+Each module strictly follows Clean Architecture with these layers:
+
+```
+Vibora.Games/
+├── Api/                         # Presentation Layer
+│   └── GameEndpoints.cs         # Minimal API endpoints (delegates to MediatR)
+├── Application/                 # Application Layer (orchestration)
+│   ├── Commands/                # Write operations (CQRS)
+│   │   ├── CreateGame/
+│   │   │   ├── CreateGameCommand.cs
+│   │   │   └── CreateGameCommandHandler.cs
+│   │   ├── JoinGame/
+│   │   ├── LeaveGame/
+│   │   └── CancelGame/
+│   ├── Queries/                 # Read operations (CQRS)
+│   │   ├── GetAvailableGames/
+│   │   ├── GetGameDetails/
+│   │   └── GetMyGames/
+│   ├── EventHandlers/           # Domain event → Integration event transformers
+│   │   └── GameCreatedDomainEventHandler.cs
+│   └── IUnitOfWork.cs           # Application interface for UoW
+├── Domain/                      # Domain Layer (business logic)
+│   ├── Game.cs                  # Aggregate root (inherits AggregateRoot)
+│   ├── Participation.cs         # Entity
+│   ├── GameShare.cs             # Entity
+│   ├── GuestParticipant.cs      # Entity
+│   ├── IGameRepository.cs       # Repository abstraction
+│   └── Events/                  # Domain events (internal to module)
+│       ├── GameCreatedDomainEvent.cs
+│       └── ParticipationRemovedDomainEvent.cs
+├── Infrastructure/              # Infrastructure Layer (technical details)
+│   ├── Data/
+│   │   └── GamesDbContext.cs
+│   ├── Persistence/
+│   │   ├── GameRepository.cs
+│   │   └── GamesUnitOfWork.cs   # Wraps shared UnitOfWork<TDbContext>
+│   └── Services/
+│       ├── UsersServiceInProcessClient.cs  # Monolith mode
+│       └── UsersServiceHttpClient.cs       # Microservices mode
+└── GamesModuleServiceRegistrar.cs  # ONLY public class (module entry point)
+```
+
+**Dependency Rules** (strictly enforced):
+- ❌ **Api** cannot reference **Domain** directly (must go through Application)
+- ❌ **Domain** cannot depend on **Infrastructure** (inverted via interfaces)
+- ✅ **Application** orchestrates **Domain** + **Infrastructure**
+- ✅ **Api** only calls **Application** via MediatR ISender
+
+**Visibility**:
+- Everything is `internal` by default
+- ONLY `*ModuleServiceRegistrar.cs` is `public`
+- `*.Contracts` project contains public events/DTOs for cross-module communication
+
+## Key Architectural Patterns
+
+### 1. CQRS with MediatR
+
+All business logic flows through MediatR commands/queries:
+
+```csharp
+// Command (write operation)
+internal sealed record CreateGameCommand(
+    string HostExternalId,
+    DateTime DateTime,
+    string Location,
+    string SkillLevel,
+    int MaxPlayers,
+    string? Notes
+) : IRequest<Result<CreateGameResult>>;
+
+// Handler
+internal sealed class CreateGameCommandHandler
+    : IRequestHandler<CreateGameCommand, Result<CreateGameResult>>
+{
+    private readonly IGameRepository _gameRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IUsersServiceClient _usersClient;
+
+    public async Task<Result<CreateGameResult>> Handle(
+        CreateGameCommand request,
+        CancellationToken cancellationToken)
+    {
+        // 1. Get cross-module data
+        var hostMetadata = await _usersClient.GetUserMetadataAsync(
+            request.HostExternalId, cancellationToken);
+
+        // 2. Domain logic (validation + creation)
+        var createResult = Game.Create(...);
+        if (!createResult.IsSuccess)
+            return Result.Invalid(createResult.ValidationErrors);
+
+        // 3. Persist + publish domain events
+        await _gameRepository.AddAsync(createResult.Value, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result.Success(MapToResult(createResult.Value));
+    }
+}
+
+// API endpoint (thin, delegates everything to MediatR)
+private static async Task<IResult> CreateGame(
+    CreateGameRequest request,
+    HttpContext httpContext,
+    ISender sender)
+{
+    var externalId = httpContext.User.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(externalId))
+        return Results.Unauthorized();
+
+    var command = new CreateGameCommand(...);
+    var result = await sender.Send(command);
+    return result.ToMinimalApiResult(); // Ardalis.Result.AspNetCore
+}
+```
+
+### 2. Result Pattern (Railway-Oriented Programming)
+
+Domain methods return `Result<T>` instead of throwing exceptions:
+
+```csharp
+// Domain logic returns Result
+public static Result<Game> Create(
+    string hostExternalId,
+    string hostName,
+    string hostSkillLevel,
+    DateTime dateTime,
+    string location,
+    string skillLevel,
+    int maxPlayers,
+    string? notes)
+{
+    // Collect ALL validation errors
+    var validationResult = Validate(dateTime, location, skillLevel, maxPlayers);
+    if (!validationResult.IsSuccess)
+        return Result<Game>.Invalid(validationResult.ValidationErrors);
+
+    var game = new Game { ... };
+
+    // Business logic can also fail
+    var addResult = game.AddParticipant(hostExternalId, hostName, hostSkillLevel, isHost: true);
+    if (!addResult.IsSuccess)
+        return Result<Game>.Error(addResult.Errors);
+
+    game.AddDomainEvent(new GameCreatedDomainEvent(...));
+
+    return Result<Game>.Success(game);
+}
+
+// Railway programming with extensions (Vibora.Shared.Application.ResultExtensions)
+return await someResult
+    .TapAsync(async entity => await DoSomethingAsync(entity))  // continues pipeline
+    .TapAsync(async entity => await DoAnotherThingAsync(entity));
+```
+
+**Common Result methods**:
+- `Result.Success()` / `Result.Success(value)`
+- `Result.Error(message)` - Generic error (400)
+- `Result.Invalid(validationErrors)` - Validation failure (422)
+- `Result.NotFound(message)` - Not found (404)
+- `Result.Unauthorized()` - Unauthorized (401)
+- `Result.Forbidden()` - Forbidden (403)
+- `Result.Conflict(message)` - Conflict (409)
+
+### 3. Domain Events + Unit of Work Pattern
+
+Domain aggregates raise events that are published **AFTER** successful transaction:
+
+```csharp
+// Domain aggregate raises event (NOT published yet)
+public static Result<Game> Create(...)
+{
+    var game = new Game { ... };
+
+    // Add to internal collection (not published)
+    game.AddDomainEvent(new GameCreatedDomainEvent(
+        game.Id, game.HostExternalId, game.DateTime, ...));
+
+    return Result<Game>.Success(game);
+}
+
+// UnitOfWork publishes events AFTER transaction
+public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+{
+    // 1. Collect domain events from all aggregates
+    var aggregateRoots = _dbContext.ChangeTracker
+        .Entries<AggregateRoot>()
+        .Where(e => e.Entity.DomainEvents.Any())
+        .Select(e => e.Entity)
+        .ToList();
+
+    var domainEvents = aggregateRoots
+        .SelectMany(a => a.DomainEvents)
+        .OrderBy(e => e.OccurredOn)
+        .ToList();
+
+    // 2. Save to database (atomic transaction)
+    var result = await _dbContext.SaveChangesAsync(cancellationToken);
+
+    // 3. Publish events via MediatR (after successful save)
+    foreach (var domainEvent in domainEvents)
+        await _publisher.Publish(domainEvent, cancellationToken);
+
+    // 4. Clear events
+    foreach (var aggregate in aggregateRoots)
+        aggregate.ClearDomainEvents();
+
+    return result;
+}
+
+// Domain event handler transforms to integration event
+public class GameCreatedDomainEventHandler
+    : INotificationHandler<GameCreatedDomainEvent>
+{
+    private readonly IPublishEndpoint _publishEndpoint;
+
+    public async Task Handle(
+        GameCreatedDomainEvent notification,
+        CancellationToken cancellationToken)
+    {
+        // Transform domain event → integration event (MassTransit)
+        await _publishEndpoint.Publish(new GameCreatedEvent
+        {
+            GameId = notification.GameId,
+            HostExternalId = notification.HostExternalId,
+            // ...
+        }, cancellationToken);
+    }
+}
+```
+
+### 4. Cross-Module Communication Strategy
+
+Modules communicate via **abstraction** that supports both monolith and microservices:
+
+```csharp
+// Shared interface (Vibora.Users.Contracts/Services/IUsersServiceClient.cs)
+public interface IUsersServiceClient
+{
+    Task<UserMetadataDto?> GetUserMetadataAsync(
+        string externalId,
+        CancellationToken cancellationToken = default);
+}
+
+// Implementation 1: In-Process (Monolith mode - current)
+public class UsersServiceInProcessClient : IUsersServiceClient
+{
+    private readonly ISender _sender; // MediatR
+
+    public async Task<UserMetadataDto?> GetUserMetadataAsync(string externalId, ...)
+    {
+        // Direct MediatR call to Users module
+        var query = new GetUserByExternalIdQuery(externalId);
+        var result = await _sender.Send(query);
+        return result.IsSuccess ? MapToDto(result.Value) : null;
+    }
+}
+
+// Implementation 2: HTTP (Microservices mode - future)
+public class UsersServiceHttpClient : IUsersServiceClient
+{
+    private readonly HttpClient _httpClient;
+
+    public async Task<UserMetadataDto?> GetUserMetadataAsync(string externalId, ...)
+    {
+        var response = await _httpClient.GetAsync($"/users/{externalId}");
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<UserMetadataDto>()
+            : null;
+    }
+}
+
+// Configuration (Program.cs) - Strategy pattern
+var deploymentMode = configuration["DeploymentMode"] ?? "Monolith";
+
+if (deploymentMode == "Monolith")
+{
+    services.AddScoped<IUsersServiceClient, UsersServiceInProcessClient>();
+}
+else if (deploymentMode == "Microservices")
+{
+    services.AddHttpClient<IUsersServiceClient, UsersServiceHttpClient>(client =>
+    {
+        client.BaseAddress = new Uri(usersServiceUrl);
+    });
+}
+```
+
+**Cross-module orchestration** (Games → Users → Notifications):
+- Games module publishes `GameCanceledEvent` (MassTransit)
+- Notifications module consumes event via `GameCanceledConsumer`
+- Notifications module calls `IUsersServiceClient` to get user preferences
+- Notifications module dispatches notifications via channels (FCM, Email, SMS)
+
+### 5. Aggregate Root Pattern
+
+All domain entities with identity inherit from `AggregateRoot`:
+
+```csharp
+// Vibora.Shared/Domain/AggregateRoot.cs
+public abstract class AggregateRoot
+{
+    private readonly List<IDomainEvent> _domainEvents = new();
+
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+
+    protected void AddDomainEvent(IDomainEvent domainEvent)
+    {
+        _domainEvents.Add(domainEvent);
+    }
+
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
+    }
+}
+
+// Domain aggregate
+public sealed class Game : AggregateRoot
+{
+    public Guid Id { get; private set; }
+    // ... properties
+
+    private readonly List<Participation> _participations = new();
+    public IReadOnlyCollection<Participation> Participations => _participations.AsReadOnly();
+
+    // Factory method pattern for creation
+    public static Result<Game> Create(...) { }
+
+    // Domain methods return Result
+    public Result AddParticipant(...) { }
+    public Result RemoveParticipant(...) { }
+    public Result Cancel() { }
+
+    // Business invariants
+    public bool IsFull() => CurrentPlayers >= MaxPlayers;
+    public bool IsHost(string userExternalId) => HostExternalId == userExternalId;
+}
+```
+
+## Module Details
+
+### Users Module
+- **Aggregate**: `User`
+- **Responsibilities**: User profile management, authentication sync, guest users
+- **Key Commands**: `SyncUserFromAuthCommand`, `CreateGuestUserCommand`, `UpdateUserProfileCommand`
+- **Key Queries**: `GetUserByExternalIdQuery`, `GetCurrentUserQuery`
+- **Exposes**: `IUsersServiceClient` for cross-module queries
+
+### Games Module
+- **Aggregate**: `Game`
+- **Responsibilities**: Game CRUD, matchmaking, participation management, game sharing, guest joining
+- **Key Commands**: `CreateGameCommand`, `JoinGameCommand`, `LeaveGameCommand`, `CancelGameCommand`, `CreateGameShareCommand`, `JoinGameAsGuestCommand`
+- **Key Queries**: `GetAvailableGamesQuery`, `GetGameDetailsQuery`, `GetMyGamesQuery`, `GetShareByTokenQuery`
+- **Events**: `GameCreatedEvent`, `GameCanceledEvent`, `GameSharedEvent`, `PlayerJoinedEvent`, `ParticipationRemovedEvent`
+
+### Notifications Module
+- **Aggregate**: `Notification`
+- **Responsibilities**: Multi-channel notifications (FCM, Email, SMS), user preferences, event consumption
+- **Consumers**: `GameCreatedConsumer`, `GameCanceledConsumer`, `PlayerJoinedConsumer`, `ParticipationRemovedConsumer`
+- **Channels**: `FcmNotificationChannel`, `EmailNotificationChannel`, `SmsNotificationChannel` (Strategy pattern)
+- **Services**: `NotificationDispatcher`, `UserPreferencesService`
+
+### Shared Kernel
+- **Domain**: `AggregateRoot`, `IDomainEvent`
+- **Application**: `ResultExtensions` (railway programming helpers)
+- **Infrastructure**: `UnitOfWork<TDbContext>` (generic implementation)
+
+## Important Implementation Details
+
+### Aspire Orchestration
+- `Vibora.AppHost` orchestrates PostgreSQL, migration service, and web API
+- Migrations run **before** web API via `Vibora.MigrationService` worker
+- Guaranteed startup order: PostgreSQL → Migrations → Web API
+
+### Authentication
+- JWT tokens from Auth0/Supabase (external provider)
+- `ExternalId` (JWT sub claim) is the user identifier
+- JWT validation in `Program.cs` with symmetric key
+- First API call: `POST /users/sync` to sync user metadata
+
+### Database Strategy
+- **Single PostgreSQL database** with module-isolated `DbContext`s
+- `GamesDbContext`, `UsersDbContext`, `NotificationsDbContext` all target "viboradb"
+- Each module owns its tables (no cross-module foreign keys)
+- EF Core migrations per module in separate folders
+
+### MassTransit (InMemory for now)
+- Configured for InMemory transport (easy switch to RabbitMQ)
+- Integration events published after domain events
+- Consumers registered per module via `AddConsumers(assembly)`
+
+### Testing Strategy
+- **Unit tests**: Domain logic, command handlers (mock repositories)
+- **Integration tests**: End-to-end with TestContainers (PostgreSQL)
+  - `IntegrationTestBase` provides seeding/querying helpers
+  - `EventIntegrationTestBase` for testing MassTransit events
+  - See `tests/Vibora.Integration.Tests/REFACTORING_GUIDE.md` for patterns
+  - Use `TestDataSeeder`, `GameBuilder`, `UserBuilder` for clean test data setup
+  - **Avoid `Task.Delay`** in event tests - use `WaitForEventAsync()` polling
+
+## Common Development Patterns
+
+### Adding a New Command
+1. Create `*Command.cs` record in `Application/Commands/<CommandName>/`
+2. Create `*CommandHandler.cs` implementing `IRequestHandler<TCommand, Result<T>>`
+3. Handler should:
+   - Query cross-module data if needed (via `IUsersServiceClient`)
+   - Call domain methods (which return `Result`)
+   - Persist via repository + `IUnitOfWork.SaveChangesAsync()`
+4. Add endpoint in `Api/*Endpoints.cs` that sends command via MediatR
+
+### Adding a New Query
+1. Create `*Query.cs` record in `Application/Queries/<QueryName>/`
+2. Create `*QueryHandler.cs` implementing `IRequestHandler<TQuery, Result<T>>`
+3. Handler should query `DbContext` directly (read-only, no UnitOfWork)
+4. Add endpoint in `Api/*Endpoints.cs` that sends query via MediatR
+
+### Adding a New Module
+1. Create module structure (Api, Application, Domain, Infrastructure)
+2. Create `<Module>ModuleServiceRegistrar.cs` as ONLY public class
+3. Register DbContext, repositories, MediatR in registrar
+4. Call `services.Add<Module>Module(builder)` in `Program.cs`
+5. Call `app.Map<Module>Endpoints()` in `Program.cs`
+6. Add migrations using `Vibora.MigrationService` as startup project
+7. Register DbContext in `Vibora.MigrationService/Program.cs`
+
+### Adding a New Domain Event
+1. Create domain event record in `Domain/Events/` implementing `IDomainEvent`
+2. Raise event in aggregate via `AddDomainEvent(new MyEvent(...))`
+3. Create handler in `Application/EventHandlers/` implementing `INotificationHandler<TEvent>`
+4. Handler publishes integration event via `IPublishEndpoint` (MassTransit)
+5. Create integration event in `<Module>.Contracts/Events/` (public)
+6. Create consumer in consuming module implementing `IConsumer<TEvent>`
+
+## Troubleshooting
+
+### "Type is not accessible" compilation errors
+- Check that domain entities/DbContexts are `public` (required for tests)
+- Most code should be `internal` except `*ModuleServiceRegistrar` and `*.Contracts`
+
+### EF migrations fail
+- Ensure using `Vibora.MigrationService` as startup project
+- Check connection string in `appsettings.json` (migrations use local config)
+- For Aspire runs, migrations happen automatically in worker
+
+### Integration tests fail to start
+- Ensure Docker is running (TestContainers needs it)
+- Check `ViboraWebApplicationFactory` configuration
+- See `tests/Vibora.Integration.Tests/REFACTORING_GUIDE.md` for common pitfalls
+
+### Cross-module call returns null
+- Verify `IUsersServiceClient` is registered in `Program.cs`
+- Check `DeploymentMode` configuration (default: "Monolith")
+- Ensure user metadata exists (call `/users/sync` first)
+
+### Domain events not publishing
+- Verify aggregate inherits `AggregateRoot`
+- Ensure `AddDomainEvent()` is called before `SaveChangesAsync()`
+- Check `UnitOfWork<TDbContext>` is registered correctly
+- Domain events publish via MediatR, integration events via MassTransit
+
+### Flaky tests with MassTransit events
+- Never use `Task.Delay()` - use `WaitForEventAsync()` polling instead
+- For negative assertions, compare event counts (before/after) not `Any()`
+- Extend `EventIntegrationTestBase` for automatic harness lifecycle
+- See REFACTORING_GUIDE.md section "Piège 1" for details

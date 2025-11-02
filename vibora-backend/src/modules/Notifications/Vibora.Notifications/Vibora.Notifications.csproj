@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- Expose internal classes to test project and main web host -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Vibora.Notifications.Tests" />
+    <InternalsVisibleTo Include="Vibora.Integration.Tests" />
+    <InternalsVisibleTo Include="Vibora.Web" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ardalis.Result" Version="10.1.0" />
+    <PackageReference Include="Ardalis.Result.AspNetCore" Version="10.1.0" />
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.5.2" />
+    <PackageReference Include="MassTransit" Version="8.5.5" />
+    <PackageReference Include="MediatR" Version="13.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vibora.Notifications.Contracts\Vibora.Notifications.Contracts.csproj" />
+    <ProjectReference Include="..\..\Games\Vibora.Games.Contracts\Vibora.Games.Contracts.csproj" />
+    <ProjectReference Include="..\..\Users\Vibora.Users.Contracts\Vibora.Users.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Vibora.Shared\Vibora.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

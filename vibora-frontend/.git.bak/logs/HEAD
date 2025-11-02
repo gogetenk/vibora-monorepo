@@ -1,0 +1,20 @@
+0000000000000000000000000000000000000000 fc8e7115d5324a460e7a1064ccf1e5a66ec4b577 Yannis <yannis.tocreau@consulting-for.edenred.com> 1753773648 +0200	commit (initial): feat: init next
+fc8e7115d5324a460e7a1064ccf1e5a66ec4b577 ab683319c0d2fa73f1a583908a33e409f9966120 Yannis <yannis.tocreau@consulting-for.edenred.com> 1753773858 +0200	commit: feat: updated to tailwind v4
+ab683319c0d2fa73f1a583908a33e409f9966120 9ae68e97137f08e66536d64bbc9344a90df3f8e3 Yannis <yannis.tocreau@consulting-for.edenred.com> 1753774539 +0200	commit: feat: updated theme with blue accent
+9ae68e97137f08e66536d64bbc9344a90df3f8e3 a3a6c19fe2ab6b873068e93279413e163475a419 Yannis <yannis.tocreau@consulting-for.edenred.com> 1753983200 +0200	commit: fix: theme switcher
+a3a6c19fe2ab6b873068e93279413e163475a419 45b29411e2930ad51693f1c8572fb1c93f5fea59 Yannis <yannis.tocreau@consulting-for.edenred.com> 1753985032 +0200	commit: fix: skeleton loader
+45b29411e2930ad51693f1c8572fb1c93f5fea59 45b29411e2930ad51693f1c8572fb1c93f5fea59 Yannis <yannis.tocreau@consulting-for.edenred.com> 1754036766 +0200	reset: moving to HEAD
+45b29411e2930ad51693f1c8572fb1c93f5fea59 45b29411e2930ad51693f1c8572fb1c93f5fea59 Yannis <yannis.tocreau@consulting-for.edenred.com> 1754037350 +0200	reset: moving to master
+45b29411e2930ad51693f1c8572fb1c93f5fea59 0f6a178cf2386d089b3d73cb9008f4bc06fc6e7b Yannis <yannis.tocreau@consulting-for.edenred.com> 1754039197 +0200	commit: feat: removed unused pages and changed a bit UX for matchmaking
+0f6a178cf2386d089b3d73cb9008f4bc06fc6e7b 790f84b3922707f87f28038b16b66da2a9ac1141 Yannis <yannis.tocreau@consulting-for.edenred.com> 1754128074 +0200	commit: fix: ui create game
+790f84b3922707f87f28038b16b66da2a9ac1141 24a14d38b46d0dc03563c7980df5b9bfd8875a5c Yannis <yannis.tocreau@consulting-for.edenred.com> 1754400291 +0200	commit: feat
+24a14d38b46d0dc03563c7980df5b9bfd8875a5c 0000000000000000000000000000000000000000 Yannis <yannis.tocreau@consulting-for.edenred.com> 1754400516 +0200	Branch: renamed refs/heads/master to refs/heads/master
+24a14d38b46d0dc03563c7980df5b9bfd8875a5c 24a14d38b46d0dc03563c7980df5b9bfd8875a5c Yannis <yannis.tocreau@consulting-for.edenred.com> 1754400516 +0200	Branch: renamed refs/heads/master to refs/heads/master
+24a14d38b46d0dc03563c7980df5b9bfd8875a5c 24a14d38b46d0dc03563c7980df5b9bfd8875a5c Yannis <yannis.tocreau@consulting-for.edenred.com> 1754400550 +0200	checkout: moving from master to master
+24a14d38b46d0dc03563c7980df5b9bfd8875a5c 24a14d38b46d0dc03563c7980df5b9bfd8875a5c Yannis <yannis.tocreau@consulting-for.edenred.com> 1754400559 +0200	checkout: moving from master to develop
+24a14d38b46d0dc03563c7980df5b9bfd8875a5c 013399e9714c5c24b0570f733cf265f4df4a217f Yannis <yannis.tocreau@consulting-for.edenred.com> 1754400658 +0200	commit: del
+013399e9714c5c24b0570f733cf265f4df4a217f 93d314f6ced7a8fa3b3c72618b9a07b4f9df2d58 Yannis <yannis.tocreau@consulting-for.edenred.com> 1761385327 +0200	commit: feat: plugged backend to create game as guest
+93d314f6ced7a8fa3b3c72618b9a07b4f9df2d58 d0f9af42eaa7b138e19725d6c2c2ce3a981ecbeb Yannis <yannis.tocreau@consulting-for.edenred.com> 1761512629 +0100	commit: feat: finished game flow and profile page
+d0f9af42eaa7b138e19725d6c2c2ce3a981ecbeb 2b59d79e958b7344a307a34acde20030a4351b11 Yannis <yannis.tocreau@consulting-for.edenred.com> 1761955875 +0100	commit: feat: added offline mode (init)
+2b59d79e958b7344a307a34acde20030a4351b11 99f38a8ad3eb2ae70ff2b360fe0434a13b8c1c2e Yannis <yannis.tocreau@consulting-for.edenred.com> 1761990528 +0100	commit: feat: offline mode on the full app
+99f38a8ad3eb2ae70ff2b360fe0434a13b8c1c2e 024f13671fd8c8bca64eb14fb871227e67a73dce Yannis <yannis.tocreau@consulting-for.edenred.com> 1761991727 +0100	commit: fix: bugs

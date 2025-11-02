@@ -1,0 +1,52 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+[remote "origin"]
+	url = https://github.com/gogetenk/vibora-backend-2.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[user]
+	name = Yannis TOCREAU
+	email = gogetenk@hotmail.com
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main
+[branch "feature/game-creation"]
+	vscode-merge-base = origin/main
+	remote = origin
+	merge = refs/heads/feature/game-creation
+[branch "develop"]
+	vscode-merge-base = origin/main
+	remote = origin
+	merge = refs/heads/develop
+[branch "feature/list-available-games"]
+	vscode-merge-base = origin/develop
+[branch "feature/game-details"]
+	vscode-merge-base = origin/develop
+[branch "feature/join-game"]
+	vscode-merge-base = origin/develop
+[branch "feature/my-games"]
+	vscode-merge-base = origin/develop
+[branch "feature/cancel-game"]
+	vscode-merge-base = origin/develop
+	remote = origin
+	merge = refs/heads/feature/cancel-game
+[branch "feature/share-game"]
+	vscode-merge-base = origin/develop
+	remote = origin
+	merge = refs/heads/feature/share-game
+[branch "feature/user-public-profile"]
+	remote = origin
+	merge = refs/heads/feature/user-public-profile
+	vscode-merge-base = origin/feature/user-public-profile
+[branch "feature/join-game-as-guest"]
+	vscode-merge-base = origin/develop
+	remote = origin
+	merge = refs/heads/feature/join-game-as-guest
+[branch "feature/phase-3b-auto-guest-reconciliation"]
+	remote = origin
+	merge = refs/heads/feature/phase-3b-auto-guest-reconciliation
+	vscode-merge-base = origin/feature/phase-3b-auto-guest-reconciliation

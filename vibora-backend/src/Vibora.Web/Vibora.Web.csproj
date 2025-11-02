@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ardalis.Result.AspNetCore" Version="10.1.0" />
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.5.2" />
+    <PackageReference Include="MassTransit" Version="8.5.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vibora.ServiceDefaults\Vibora.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\modules\Users\Vibora.Users\Vibora.Users.csproj" />
+    <ProjectReference Include="..\modules\Games\Vibora.Games\Vibora.Games.csproj" />
+    <ProjectReference Include="..\modules\Communication\Vibora.Communication\Vibora.Communication.csproj" />
+    <ProjectReference Include="..\modules\Notifications\Vibora.Notifications\Vibora.Notifications.csproj" />
+  </ItemGroup>
+
+</Project>

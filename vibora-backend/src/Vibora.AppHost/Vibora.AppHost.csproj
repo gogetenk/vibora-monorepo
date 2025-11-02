@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.2" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>b05eb836-32ea-4d8c-acdf-bdabb05c3867</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.2" />
+    <PackageReference Include="Aspire.Hosting.Docker" Version="9.5.2-preview.1.25522.3" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.5.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vibora.Web\Vibora.Web.csproj" />
+    <ProjectReference Include="..\Vibora.MigrationService\Vibora.MigrationService.csproj" />
+  </ItemGroup>
+
+</Project>

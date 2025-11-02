@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <!-- Expose internal classes to test project -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Vibora.Users.Tests" />
+    <InternalsVisibleTo Include="Vibora.Integration.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ardalis.Result" Version="10.1.0" />
+    <PackageReference Include="Ardalis.Result.AspNetCore" Version="10.1.0" />
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.5.2" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="MassTransit" Version="8.5.5" />
+    <PackageReference Include="MediatR" Version="13.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vibora.Users.Contracts\Vibora.Users.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Vibora.Shared\Vibora.Shared.csproj" />
+    <ProjectReference Include="..\..\Games\Vibora.Games.Contracts\Vibora.Games.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

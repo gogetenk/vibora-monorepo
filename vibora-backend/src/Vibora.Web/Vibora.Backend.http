@@ -1,0 +1,6 @@
+@Vibora.Backend_HostAddress = http://localhost:5273
+
+GET {{Vibora.Backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

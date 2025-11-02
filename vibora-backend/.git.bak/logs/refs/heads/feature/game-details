@@ -1,0 +1,3 @@
+0000000000000000000000000000000000000000 38c90680c6a163ac6e8342e3405f85753543e8b9 Yannis TOCREAU <gogetenk@hotmail.com> 1759670476 +0200	branch: Created from HEAD
+38c90680c6a163ac6e8342e3405f85753543e8b9 74e4f3f2ae335fcae77313a72daca5bced48a6d4 Yannis TOCREAU <gogetenk@hotmail.com> 1759671458 +0200	commit: feat: implement GET /games/{id} endpoint for game details
+74e4f3f2ae335fcae77313a72daca5bced48a6d4 32a5662ee9a01aa515807254f6e9d2366bdd2be0 Yannis TOCREAU <gogetenk@hotmail.com> 1759671794 +0200	commit: feat: implement GET /games/{id} endpoint for game details

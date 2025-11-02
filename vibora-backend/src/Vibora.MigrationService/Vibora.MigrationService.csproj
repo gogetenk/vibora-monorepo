@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-Vibora.MigrationService-cb7f899f-1580-470f-bf3b-2e7805d1206c</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.5.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vibora.ServiceDefaults\Vibora.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\modules\Games\Vibora.Games\Vibora.Games.csproj" />
+    <ProjectReference Include="..\modules\Users\Vibora.Users\Vibora.Users.csproj" />
+    <ProjectReference Include="..\modules\Notifications\Vibora.Notifications\Vibora.Notifications.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,94 @@
+0000000000000000000000000000000000000000 a6f8880d45c9b22fa8ddb68a1f3412a7e2fecb97 Yannis TOCREAU <gogetenk@hotmail.com> 1759354450 +0200	commit (initial): Initial commit
+a6f8880d45c9b22fa8ddb68a1f3412a7e2fecb97 62dea28dac40da85c2f00488a5c6d2b52e18b0c1 Yannis TOCREAU <gogetenk@hotmail.com> 1759651915 +0200	commit: feat: init sollution
+62dea28dac40da85c2f00488a5c6d2b52e18b0c1 62dea28dac40da85c2f00488a5c6d2b52e18b0c1 Yannis TOCREAU <gogetenk@hotmail.com> 1759651959 +0200	checkout: moving from main to feature/game-creation
+62dea28dac40da85c2f00488a5c6d2b52e18b0c1 1cb0395d97343e8e6243a7fc61cb0b80f2b836a8 Yannis TOCREAU <gogetenk@hotmail.com> 1759655200 +0200	commit: feat: added Game module
+1cb0395d97343e8e6243a7fc61cb0b80f2b836a8 1194a6b50bf55b08a0d15da140b69fc46803e62f Yannis TOCREAU <gogetenk@hotmail.com> 1759655396 +0200	commit: fix: swaggerUI
+1194a6b50bf55b08a0d15da140b69fc46803e62f b2c92622fcee01b11c564b6b38423f74bae8f242 Yannis TOCREAU <gogetenk@hotmail.com> 1759655460 +0200	commit: fixes
+b2c92622fcee01b11c564b6b38423f74bae8f242 d526be9893a36a777e46cff9f4060fdfbfe45ca2 Yannis TOCREAU <gogetenk@hotmail.com> 1759657094 +0200	commit: feat: added unit tests
+d526be9893a36a777e46cff9f4060fdfbfe45ca2 279779ea038c62e1c24f8c34fdc231a7b2af4162 Yannis TOCREAU <gogetenk@hotmail.com> 1759658208 +0200	commit: refactored
+279779ea038c62e1c24f8c34fdc231a7b2af4162 62dea28dac40da85c2f00488a5c6d2b52e18b0c1 Yannis TOCREAU <gogetenk@hotmail.com> 1759658341 +0200	checkout: moving from feature/game-creation to main
+62dea28dac40da85c2f00488a5c6d2b52e18b0c1 62dea28dac40da85c2f00488a5c6d2b52e18b0c1 Yannis TOCREAU <gogetenk@hotmail.com> 1759658345 +0200	checkout: moving from main to develop
+62dea28dac40da85c2f00488a5c6d2b52e18b0c1 279779ea038c62e1c24f8c34fdc231a7b2af4162 Yannis TOCREAU <gogetenk@hotmail.com> 1759658355 +0200	checkout: moving from develop to feature/game-creation
+279779ea038c62e1c24f8c34fdc231a7b2af4162 3ec259bf9936f6beff98baf4eae2a24571bdc088 Yannis TOCREAU <gogetenk@hotmail.com> 1759667563 +0200	commit: feat: added integration tests
+3ec259bf9936f6beff98baf4eae2a24571bdc088 4ef7d62599d9e981b269ef2c823c2b4caa0a19fe Yannis TOCREAU <gogetenk@hotmail.com> 1759667579 +0200	commit: feat: added ntegration tests
+4ef7d62599d9e981b269ef2c823c2b4caa0a19fe 14487150b61b36c98e51b533bd2a4c891105b6b2 Yannis TOCREAU <gogetenk@hotmail.com> 1759667851 +0200	commit: docs: Mark Game Creation feature as completed in backlog
+14487150b61b36c98e51b533bd2a4c891105b6b2 62dea28dac40da85c2f00488a5c6d2b52e18b0c1 Yannis TOCREAU <gogetenk@hotmail.com> 1759667857 +0200	checkout: moving from feature/game-creation to develop
+62dea28dac40da85c2f00488a5c6d2b52e18b0c1 7abf13f35af8afdb8bd7f26b2a6389992297285b Yannis TOCREAU <gogetenk@hotmail.com> 1759667877 +0200	merge feature/game-creation: Merge made by the 'ort' strategy.
+7abf13f35af8afdb8bd7f26b2a6389992297285b 02efa70feaef119309ae6747c86c28354c396c1c Yannis TOCREAU <gogetenk@hotmail.com> 1759668661 +0200	commit: feat: made a new architecture document
+02efa70feaef119309ae6747c86c28354c396c1c 02efa70feaef119309ae6747c86c28354c396c1c Yannis TOCREAU <gogetenk@hotmail.com> 1759669153 +0200	checkout: moving from develop to feature/list-available-games
+02efa70feaef119309ae6747c86c28354c396c1c 6568f29486488bcdaaf568d82e38ff7a28a10f39 Yannis TOCREAU <gogetenk@hotmail.com> 1759670381 +0200	commit: feat: implement GET /games endpoint with filters and pagination
+6568f29486488bcdaaf568d82e38ff7a28a10f39 02efa70feaef119309ae6747c86c28354c396c1c Yannis TOCREAU <gogetenk@hotmail.com> 1759670411 +0200	checkout: moving from feature/list-available-games to develop
+02efa70feaef119309ae6747c86c28354c396c1c 38c90680c6a163ac6e8342e3405f85753543e8b9 Yannis TOCREAU <gogetenk@hotmail.com> 1759670417 +0200	merge feature/list-available-games: Merge made by the 'ort' strategy.
+38c90680c6a163ac6e8342e3405f85753543e8b9 38c90680c6a163ac6e8342e3405f85753543e8b9 Yannis TOCREAU <gogetenk@hotmail.com> 1759670476 +0200	checkout: moving from develop to feature/game-details
+38c90680c6a163ac6e8342e3405f85753543e8b9 74e4f3f2ae335fcae77313a72daca5bced48a6d4 Yannis TOCREAU <gogetenk@hotmail.com> 1759671458 +0200	commit: feat: implement GET /games/{id} endpoint for game details
+74e4f3f2ae335fcae77313a72daca5bced48a6d4 32a5662ee9a01aa515807254f6e9d2366bdd2be0 Yannis TOCREAU <gogetenk@hotmail.com> 1759671794 +0200	commit: feat: implement GET /games/{id} endpoint for game details
+32a5662ee9a01aa515807254f6e9d2366bdd2be0 38c90680c6a163ac6e8342e3405f85753543e8b9 Yannis TOCREAU <gogetenk@hotmail.com> 1759671809 +0200	checkout: moving from feature/game-details to develop
+38c90680c6a163ac6e8342e3405f85753543e8b9 58d3e748b23f20aa872f613b87d9211f4df568a7 Yannis TOCREAU <gogetenk@hotmail.com> 1759671815 +0200	merge feature/game-details: Merge made by the 'ort' strategy.
+58d3e748b23f20aa872f613b87d9211f4df568a7 58d3e748b23f20aa872f613b87d9211f4df568a7 Yannis TOCREAU <gogetenk@hotmail.com> 1759671932 +0200	checkout: moving from develop to feature/join-game
+58d3e748b23f20aa872f613b87d9211f4df568a7 6d3b2cf9735dc56a5f1e4de83c64144be8d093ac Yannis TOCREAU <gogetenk@hotmail.com> 1759677803 +0200	commit: feat: implement POST /games/{id}/players to join game
+6d3b2cf9735dc56a5f1e4de83c64144be8d093ac 58d3e748b23f20aa872f613b87d9211f4df568a7 Yannis TOCREAU <gogetenk@hotmail.com> 1759677819 +0200	checkout: moving from feature/join-game to develop
+58d3e748b23f20aa872f613b87d9211f4df568a7 e46fc392b6e94faea03a9dbf5c3eac05dc118bc3 Yannis TOCREAU <gogetenk@hotmail.com> 1759677824 +0200	merge feature/join-game: Merge made by the 'ort' strategy.
+e46fc392b6e94faea03a9dbf5c3eac05dc118bc3 8408631535c60888d3f27d8083756ac841e8ef79 Yannis TOCREAU <gogetenk@hotmail.com> 1759677855 +0200	commit: fix: changelog
+8408631535c60888d3f27d8083756ac841e8ef79 8408631535c60888d3f27d8083756ac841e8ef79 Yannis TOCREAU <gogetenk@hotmail.com> 1759677963 +0200	checkout: moving from develop to feature/my-games
+8408631535c60888d3f27d8083756ac841e8ef79 8408631535c60888d3f27d8083756ac841e8ef79 Yannis TOCREAU <gogetenk@hotmail.com> 1759678420 +0200	checkout: moving from feature/my-games to develop
+8408631535c60888d3f27d8083756ac841e8ef79 0ce0750b91b594bc108b0a24dfa9a3716d1605ef Yannis TOCREAU <gogetenk@hotmail.com> 1759678480 +0200	commit: feat: implement GET /games/me for user's upcoming games
+0ce0750b91b594bc108b0a24dfa9a3716d1605ef 8408631535c60888d3f27d8083756ac841e8ef79 Yannis TOCREAU <gogetenk@hotmail.com> 1759678520 +0200	checkout: moving from develop to feature/my-games
+8408631535c60888d3f27d8083756ac841e8ef79 0ce0750b91b594bc108b0a24dfa9a3716d1605ef Yannis TOCREAU <gogetenk@hotmail.com> 1759678546 +0200	checkout: moving from feature/my-games to develop
+0ce0750b91b594bc108b0a24dfa9a3716d1605ef 0d3a0952169a614a6dc47430331b52b822650ecb Yannis TOCREAU <gogetenk@hotmail.com> 1759679035 +0200	commit: fix
+0d3a0952169a614a6dc47430331b52b822650ecb b9910ca16bd487b6ad6d20b107d9e1740425d7ac Yannis TOCREAU <gogetenk@hotmail.com> 1759680173 +0200	commit: feat: added efcore migration service
+b9910ca16bd487b6ad6d20b107d9e1740425d7ac d2704006768e33af3a45708a47c205382b63a8e0 Yannis TOCREAU <gogetenk@hotmail.com> 1759680825 +0200	commit: feat: Add EF Core migrations orchestration with Aspire - Implement MigrationService Worker for automated database migrations - Configure Aspire AppHost to run migrations before API startup - Document migration pattern in Architecture document
+d2704006768e33af3a45708a47c205382b63a8e0 d2704006768e33af3a45708a47c205382b63a8e0 Yannis TOCREAU <gogetenk@hotmail.com> 1759680829 +0200	checkout: moving from develop to feature/leave-game
+d2704006768e33af3a45708a47c205382b63a8e0 4fe8a14e632bc8ce3d1da31f7b712e8c5c13591d Yannis TOCREAU <gogetenk@hotmail.com> 1759683317 +0200	commit: feat(games): Implement 'Leave Game' user story
+4fe8a14e632bc8ce3d1da31f7b712e8c5c13591d d2704006768e33af3a45708a47c205382b63a8e0 Yannis TOCREAU <gogetenk@hotmail.com> 1759683465 +0200	checkout: moving from feature/leave-game to develop
+d2704006768e33af3a45708a47c205382b63a8e0 4fe8a14e632bc8ce3d1da31f7b712e8c5c13591d Yannis TOCREAU <gogetenk@hotmail.com> 1759683466 +0200	merge feature/leave-game: Fast-forward
+4fe8a14e632bc8ce3d1da31f7b712e8c5c13591d bacc641cbd6ecfd5abb630d789605e076b755dcf Yannis TOCREAU <gogetenk@hotmail.com> 1759685952 +0200	commit: feat(games): Add domain and integration events for participation removal with E2E tests
+bacc641cbd6ecfd5abb630d789605e076b755dcf 4249f014e6c2bdc40d89dcd3bddb8211cda96f79 Yannis TOCREAU <gogetenk@hotmail.com> 1759686154 +0200	commit: fix
+4249f014e6c2bdc40d89dcd3bddb8211cda96f79 4249f014e6c2bdc40d89dcd3bddb8211cda96f79 Yannis TOCREAU <gogetenk@hotmail.com> 1759686213 +0200	checkout: moving from develop to feature/cancel-game
+4249f014e6c2bdc40d89dcd3bddb8211cda96f79 cb295128969ad63ba5ad97c2d9fda273a5944ba1 Yannis TOCREAU <gogetenk@hotmail.com> 1759686925 +0200	commit: feat(games): Implement Cancel Game with complete event architecture
+cb295128969ad63ba5ad97c2d9fda273a5944ba1 aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 Yannis TOCREAU <gogetenk@hotmail.com> 1759687049 +0200	commit: backlog
+aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 4249f014e6c2bdc40d89dcd3bddb8211cda96f79 Yannis TOCREAU <gogetenk@hotmail.com> 1759687058 +0200	checkout: moving from feature/cancel-game to develop
+4249f014e6c2bdc40d89dcd3bddb8211cda96f79 aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 Yannis TOCREAU <gogetenk@hotmail.com> 1759687073 +0200	merge feature/cancel-game: Fast-forward
+aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 Yannis TOCREAU <gogetenk@hotmail.com> 1759687140 +0200	checkout: moving from develop to feature/share-game
+aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 e726589b29ea757924e81ed7a5054b3c299c7a2a Yannis TOCREAU <gogetenk@hotmail.com> 1759687921 +0200	commit: doc
+e726589b29ea757924e81ed7a5054b3c299c7a2a 416a7a01a0a833200a702c0904911a79d42510b4 Yannis TOCREAU <gogetenk@hotmail.com> 1759731249 +0200	commit: feat(games): Implement Share Game Phase 1 with complete event architecture
+416a7a01a0a833200a702c0904911a79d42510b4 a6b20154ed59c3f1e5da152edc479681d13b49e3 Yannis TOCREAU <gogetenk@hotmail.com> 1759732980 +0200	commit: feat: added joingaim as guest feature
+a6b20154ed59c3f1e5da152edc479681d13b49e3 b7bc784d3290d361ec4c359c18edf03a89a56769 Yannis TOCREAU <gogetenk@hotmail.com> 1759779778 +0200	commit: feat: implemented
+b7bc784d3290d361ec4c359c18edf03a89a56769 b7bc784d3290d361ec4c359c18edf03a89a56769 Yannis TOCREAU <gogetenk@hotmail.com> 1759780318 +0200	reset: moving to HEAD
+b7bc784d3290d361ec4c359c18edf03a89a56769 b7bc784d3290d361ec4c359c18edf03a89a56769 Yannis TOCREAU <gogetenk@hotmail.com> 1759816630 +0200	reset: moving to HEAD
+b7bc784d3290d361ec4c359c18edf03a89a56769 02fbc9448eaa00529db1821616869faad25a6a3f Yannis TOCREAU <gogetenk@hotmail.com> 1759816813 +0200	checkout: moving from feature/share-game to feature/user-public-profile
+02fbc9448eaa00529db1821616869faad25a6a3f b92f08766e3f2bf8b1676dbb386b1d475c146a61 Yannis TOCREAU <gogetenk@hotmail.com> 1760023531 +0200	commit: feat: updated
+b92f08766e3f2bf8b1676dbb386b1d475c146a61 aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 Yannis TOCREAU <gogetenk@hotmail.com> 1760023542 +0200	checkout: moving from feature/user-public-profile to develop
+aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 4ecfa85acd896ff480d787be1cd13b8420ad37d9 Yannis TOCREAU <gogetenk@hotmail.com> 1760023545 +0200	pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+4ecfa85acd896ff480d787be1cd13b8420ad37d9 b92f08766e3f2bf8b1676dbb386b1d475c146a61 Yannis TOCREAU <gogetenk@hotmail.com> 1760023562 +0200	checkout: moving from develop to feature/user-public-profile
+b92f08766e3f2bf8b1676dbb386b1d475c146a61 d0b4b5721e8ecce7176682fde4622607d4b5d9ee Yannis TOCREAU <gogetenk@hotmail.com> 1760024742 +0200	commit: fix: swagger
+d0b4b5721e8ecce7176682fde4622607d4b5d9ee 0ef4f78ce862cb668d306bb3cb349fdcb74cb83d Yannis TOCREAU <gogetenk@hotmail.com> 1760024950 +0200	commit: fix: swaggerui
+0ef4f78ce862cb668d306bb3cb349fdcb74cb83d 3d81406b69cbd992ca14938cc14e4061313d0743 Yannis TOCREAU <gogetenk@hotmail.com> 1760257488 +0200	commit: fix: integration tests Game
+3d81406b69cbd992ca14938cc14e4061313d0743 a336a3bdf9c6d8b9c35fce71221f091f6588f271 Yannis TOCREAU <gogetenk@hotmail.com> 1760258245 +0200	commit: fix: almost all ITs
+a336a3bdf9c6d8b9c35fce71221f091f6588f271 1ee9ae94f0c72d0bfc0bd104f99c5730a3c580f9 Yannis TOCREAU <gogetenk@hotmail.com> 1760258649 +0200	commit: fix: ITs
+1ee9ae94f0c72d0bfc0bd104f99c5730a3c580f9 5d140fbedeb5d34b1f99b61f59c3ef4a1811ca3d Yannis TOCREAU <gogetenk@hotmail.com> 1760261520 +0200	commit: fix: unit of work problem that was shared among modules
+5d140fbedeb5d34b1f99b61f59c3ef4a1811ca3d dc2bb754d9ac0aac8669936a8e27c71cdb18a746 Yannis TOCREAU <gogetenk@hotmail.com> 1760288343 +0200	commit: feat: started implementing railway programming
+dc2bb754d9ac0aac8669936a8e27c71cdb18a746 4ecfa85acd896ff480d787be1cd13b8420ad37d9 Yannis TOCREAU <gogetenk@hotmail.com> 1760288603 +0200	checkout: moving from feature/user-public-profile to develop
+4ecfa85acd896ff480d787be1cd13b8420ad37d9 dc2bb754d9ac0aac8669936a8e27c71cdb18a746 Yannis TOCREAU <gogetenk@hotmail.com> 1760288617 +0200	merge feature/user-public-profile: Fast-forward
+dc2bb754d9ac0aac8669936a8e27c71cdb18a746 dc2bb754d9ac0aac8669936a8e27c71cdb18a746 Yannis TOCREAU <gogetenk@hotmail.com> 1760288772 +0200	checkout: moving from develop to feature/join-game-as-guest
+dc2bb754d9ac0aac8669936a8e27c71cdb18a746 af90169323134fb432c3b604783d335fea1bbdc8 Yannis TOCREAU <gogetenk@hotmail.com> 1760337186 +0200	commit: feat(games): implement 'Join Game as Guest' feature (US #MVP-GM-007)
+af90169323134fb432c3b604783d335fea1bbdc8 6c1590283902fb2691257873bafc9153e1b14a37 Yannis TOCREAU <gogetenk@hotmail.com> 1760337329 +0200	commit: docs(backlog): mark 'Join Game as Guest' as completed
+6c1590283902fb2691257873bafc9153e1b14a37 4ce94099774575e42ba1ed09320a13cec8f8147e Yannis TOCREAU <gogetenk@hotmail.com> 1760769519 +0200	checkout: moving from feature/join-game-as-guest to feature/phase-3b-auto-guest-reconciliation
+4ce94099774575e42ba1ed09320a13cec8f8147e e2bd4932c926842a81827b640ce9675787f5f3fb Yannis TOCREAU <gogetenk@hotmail.com> 1760770651 +0200	commit: update backlog
+e2bd4932c926842a81827b640ce9675787f5f3fb 710a2f00ea4d0973a6aa2c2074ad08c466666c8a Yannis TOCREAU <gogetenk@hotmail.com> 1760783048 +0200	pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+710a2f00ea4d0973a6aa2c2074ad08c466666c8a dc2bb754d9ac0aac8669936a8e27c71cdb18a746 Yannis TOCREAU <gogetenk@hotmail.com> 1760788866 +0200	checkout: moving from feature/phase-3b-auto-guest-reconciliation to develop
+dc2bb754d9ac0aac8669936a8e27c71cdb18a746 dc9f7d47a626ab33e3a84c11e6c08fa54cdcf899 Yannis TOCREAU <gogetenk@hotmail.com> 1760788868 +0200	pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+dc9f7d47a626ab33e3a84c11e6c08fa54cdcf899 710a2f00ea4d0973a6aa2c2074ad08c466666c8a Yannis TOCREAU <gogetenk@hotmail.com> 1760788871 +0200	checkout: moving from develop to feature/phase-3b-auto-guest-reconciliation
+710a2f00ea4d0973a6aa2c2074ad08c466666c8a dc9f7d47a626ab33e3a84c11e6c08fa54cdcf899 Yannis TOCREAU <gogetenk@hotmail.com> 1760788876 +0200	checkout: moving from feature/phase-3b-auto-guest-reconciliation to develop
+dc9f7d47a626ab33e3a84c11e6c08fa54cdcf899 710a2f00ea4d0973a6aa2c2074ad08c466666c8a Yannis TOCREAU <gogetenk@hotmail.com> 1760788881 +0200	merge feature/phase-3b-auto-guest-reconciliation: Fast-forward
+710a2f00ea4d0973a6aa2c2074ad08c466666c8a 710a2f00ea4d0973a6aa2c2074ad08c466666c8a Yannis TOCREAU <gogetenk@hotmail.com> 1761328682 +0200	checkout: moving from develop to feature/phase-3b-auto-guest-reconciliation
+710a2f00ea4d0973a6aa2c2074ad08c466666c8a 710a2f00ea4d0973a6aa2c2074ad08c466666c8a Yannis TOCREAU <gogetenk@hotmail.com> 1761328685 +0200	checkout: moving from feature/phase-3b-auto-guest-reconciliation to develop
+710a2f00ea4d0973a6aa2c2074ad08c466666c8a 710a2f00ea4d0973a6aa2c2074ad08c466666c8a Yannis TOCREAU <gogetenk@hotmail.com> 1761328688 +0200	checkout: moving from develop to feature/phase-3b-auto-guest-reconciliation
+710a2f00ea4d0973a6aa2c2074ad08c466666c8a 710a2f00ea4d0973a6aa2c2074ad08c466666c8a Yannis TOCREAU <gogetenk@hotmail.com> 1761328694 +0200	checkout: moving from feature/phase-3b-auto-guest-reconciliation to develop
+710a2f00ea4d0973a6aa2c2074ad08c466666c8a 39eef77cb4ab6070499d8af2d40e3fb340ecfcbe Yannis TOCREAU <gogetenk@hotmail.com> 1761329769 +0200	commit: fix: alignement UX pour les guests
+39eef77cb4ab6070499d8af2d40e3fb340ecfcbe 3426a42041cc9fa2f50aabec317570d6aba7086a Yannis TOCREAU <gogetenk@hotmail.com> 1761330579 +0200	commit: fix: removed unused note from Game model
+3426a42041cc9fa2f50aabec317570d6aba7086a 0026382cdc4566cd183a71468dfbfbe38af4dc04 Yannis TOCREAU <gogetenk@hotmail.com> 1761382534 +0200	commit: fix: guest game creation
+0026382cdc4566cd183a71468dfbfbe38af4dc04 0026382cdc4566cd183a71468dfbfbe38af4dc04 Yannis TOCREAU <gogetenk@hotmail.com> 1761386378 +0200	reset: moving to HEAD
+0026382cdc4566cd183a71468dfbfbe38af4dc04 e93826b29ac21629aa7cd9d95357df61d30caac2 Yannis TOCREAU <gogetenk@hotmail.com> 1761389777 +0200	commit: fiffeaei
+e93826b29ac21629aa7cd9d95357df61d30caac2 338f36473155b537fdb41adaba18af36f9acd3b7 Yannis TOCREAU <gogetenk@hotmail.com> 1761438434 +0200	commit: feat: full create game flow working (connected or guest)
+338f36473155b537fdb41adaba18af36f9acd3b7 b009694bcaf1d156c1b995faf0b8526a6be945d0 Yannis TOCREAU <gogetenk@hotmail.com> 1761513180 +0100	commit: fix: leave game and various game flow fixes
+b009694bcaf1d156c1b995faf0b8526a6be945d0 cdb279b5018a972cb1add5c8219e9662046f0cf2 Yannis TOCREAU <gogetenk@hotmail.com> 1761818836 +0100	pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
