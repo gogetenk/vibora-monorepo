@@ -357,16 +357,6 @@ export default function GameDetail() {
     const gameLevel = game.level
     const difference = Math.abs(gameLevel - playerLevel)
     
-    console.log('🎾 Level Check:', {
-      playerLevel,
-      gameLevel,
-      difference,
-      compatible: difference <= 1,
-      effectiveIsGuest,
-      hasGuestUser: !!effectiveGuestUser,
-      isAuthenticated: !!currentUserExternalId
-    })
-    
     return difference <= 1 // Max ±1 niveau d'écart
   }
 

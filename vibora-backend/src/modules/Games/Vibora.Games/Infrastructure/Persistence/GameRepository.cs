@@ -19,6 +19,7 @@ internal sealed class GameRepository : IGameRepository
         var game = await _dbContext.Games
             .Include(g => g.Participations)
             .Include(g => g.GuestParticipants)
+            .AsSplitQuery() // Avoid cartesian explosion by splitting into multiple queries
             .FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
 
         return game == null
@@ -31,6 +32,7 @@ internal sealed class GameRepository : IGameRepository
         var game = await _dbContext.Games
             .Include(g => g.Participations)
             .Include(g => g.GuestParticipants)
+            .AsSplitQuery() // Avoid cartesian explosion by splitting into multiple queries
             .FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
 
         return game == null
@@ -52,6 +54,7 @@ internal sealed class GameRepository : IGameRepository
         return await _dbContext.Games
             .Include(g => g.Participations)
             .Include(g => g.GuestParticipants) // Include guests
+            .AsSplitQuery() // Avoid cartesian explosion by splitting into multiple queries
             .Where(g => 
                 g.Participations.Any(p => p.UserExternalId == userExternalId) || // Normal user
                 g.GuestParticipants.Any(gp => gp.GuestExternalId == userExternalId) || // Guest user

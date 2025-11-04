@@ -266,3 +266,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /vibora-backend/nul
+/vibora-backend/tests/Vibora.Integration.Tests/nul
