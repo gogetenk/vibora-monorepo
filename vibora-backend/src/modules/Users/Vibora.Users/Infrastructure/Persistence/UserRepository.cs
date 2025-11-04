@@ -16,12 +16,14 @@ internal sealed class UserRepository : IUserRepository
     public async Task<User?> GetByExternalIdAsync(string externalId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Users
+            .AsNoTracking()
             .FirstOrDefaultAsync(u => u.ExternalId == externalId, cancellationToken);
     }
 
     public async Task<User?> GetNonGuestByExternalIdAsync(string externalId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Users
+            .AsNoTracking()
             .FirstOrDefaultAsync(
                 u => u.ExternalId == externalId && !u.IsGuest,
                 cancellationToken);
@@ -30,6 +32,7 @@ internal sealed class UserRepository : IUserRepository
     public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _dbContext.Users
+            .AsNoTracking()
             .OrderBy(u => u.Name)
             .ToListAsync(cancellationToken);
     }
@@ -37,6 +40,7 @@ internal sealed class UserRepository : IUserRepository
     public async Task<bool> ExistsAsync(string externalId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Users
+            .AsNoTracking()
             .AnyAsync(u => u.ExternalId == externalId, cancellationToken);
     }
 
@@ -60,6 +64,7 @@ internal sealed class UserRepository : IUserRepository
         CancellationToken cancellationToken = default)
     {
         return await _dbContext.Users
+            .AsNoTracking()
             .FirstOrDefaultAsync(
                 u => u.IsGuest && u.PhoneNumber == phoneNumber,
                 cancellationToken);
@@ -72,6 +77,7 @@ internal sealed class UserRepository : IUserRepository
         var normalizedEmail = email.Trim().ToLowerInvariant();
 
         return await _dbContext.Users
+            .AsNoTracking()
             .FirstOrDefaultAsync(
                 u => u.IsGuest && u.Email == normalizedEmail,
                 cancellationToken);

@@ -44,6 +44,8 @@ internal sealed class GameRepository : IGameRepository
     {
         return await _dbContext.Games
             .Include(g => g.Participations)
+            .AsNoTracking() // Read-only query
+            .AsSplitQuery() // Avoid cartesian explosion
             .Where(g => g.Status == GameStatus.Open && g.DateTime >= afterDate)
             .OrderBy(g => g.DateTime)
             .ToListAsync(cancellationToken);

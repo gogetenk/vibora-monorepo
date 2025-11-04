@@ -116,10 +116,7 @@ public sealed class UsersDbContext : DbContext
             entity.Property(s => s.UpdatedAt)
                 .IsRequired();
 
-            // Index for common lookups
-            entity.HasIndex(s => s.UserExternalId)
-                .HasDatabaseName("IX_UserNotificationSettings_UserExternalId");
-
+            // Note: UserExternalId is the PRIMARY KEY, so no additional index needed
             // Ignore domain events (not persisted)
             entity.Ignore(s => s.DomainEvents);
         });

@@ -15,6 +15,7 @@ internal sealed class GameShareRepository : IGameShareRepository
     public async Task<GameShare?> GetByTokenAsync(string shareToken, CancellationToken cancellationToken = default)
     {
         return await _context.GameShares
+            .AsNoTracking()
             .Include(gs => gs.Game)
             .FirstOrDefaultAsync(gs => gs.ShareToken == shareToken, cancellationToken);
     }
@@ -22,6 +23,7 @@ internal sealed class GameShareRepository : IGameShareRepository
     public async Task<GameShare?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.GameShares
+            .AsNoTracking()
             .Include(gs => gs.Game)
             .FirstOrDefaultAsync(gs => gs.Id == id, cancellationToken);
     }
@@ -29,6 +31,7 @@ internal sealed class GameShareRepository : IGameShareRepository
     public async Task<List<GameShare>> GetByGameIdAsync(Guid gameId, CancellationToken cancellationToken = default)
     {
         return await _context.GameShares
+            .AsNoTracking()
             .Where(gs => gs.GameId == gameId)
             .OrderByDescending(gs => gs.CreatedAt)
             .ToListAsync(cancellationToken);

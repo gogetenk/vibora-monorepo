@@ -20,12 +20,14 @@ internal sealed class NotificationRepository : INotificationRepository
     public async Task<Notification?> GetByIdAsync(Guid notificationId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Notifications
+            .AsNoTracking()
             .FirstOrDefaultAsync(n => n.NotificationId == notificationId, cancellationToken);
     }
 
     public async Task<List<Notification>> GetPendingByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Notifications
+            .AsNoTracking()
             .Where(n => n.UserId == userId && n.Status == NotificationStatus.Pending)
             .OrderBy(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -34,6 +36,7 @@ internal sealed class NotificationRepository : INotificationRepository
     public async Task<List<Notification>> GetPendingForRetryAsync(int limit = 100, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Notifications
+            .AsNoTracking()
             .Where(n => n.Status == NotificationStatus.Pending)
             .OrderBy(n => n.CreatedAt)
             .Take(limit)

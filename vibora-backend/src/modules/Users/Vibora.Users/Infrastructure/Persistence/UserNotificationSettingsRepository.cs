@@ -19,6 +19,7 @@ internal sealed class UserNotificationSettingsRepository : IUserNotificationSett
     public async Task<UserNotificationSettings?> GetByUserExternalIdAsync(string userExternalId, CancellationToken cancellationToken = default)
     {
         return await _context.UserNotificationSettings
+            .AsNoTracking()
             .FirstOrDefaultAsync(s => s.UserExternalId == userExternalId, cancellationToken);
     }
 
