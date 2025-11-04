@@ -13,6 +13,7 @@ import { signIn, signInWithOAuth, signInWithMagicLink } from "@/lib/auth/supabas
 import { useToast } from "@/components/ui/use-toast"
 import { VPage, VContainer, VContentCard } from "@/components/ui/vibora-layout"
 import { FADE_IN_ANIMATION_VARIANTS } from "@/lib/animation-variants"
+import { GuestOnboardingModal } from "@/components/guest-onboarding-modal"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -24,6 +25,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [useMagicLink, setUseMagicLink] = useState(false)
+  const [showGuestModal, setShowGuestModal] = useState(false)
+  
+  // Extract gameId from redirect URL if present (e.g., /games/123)
+  const gameId = redirectTo.match(/\/games\/([a-f0-9-]+)/)?.[1] || null
 
   // ============================================================================
   // Handlers
@@ -266,7 +271,15 @@ export default function LoginPage() {
               <Button
                 variant="ghost"
                 className="w-full"
-                onClick={() => router.push(redirectTo)}
+                onClick={() => {
+                  if (gameId) {
+                    // User wants to join a specific game - show guest modal
+                    setShowGuestModal(true)
+                  } else {
+                    // Just browsing - redirect without account
+                    router.push(redirectTo)
+                  }
+                }}
                 disabled={isLoading}
               >
                 Continuer sans inscription
@@ -275,6 +288,16 @@ export default function LoginPage() {
           </VContentCard>
         </motion.div>
       </VContainer>
+      
+      {/* Guest Onboarding Modal - only show if joining a game */}
+      {gameId && (
+        <GuestOnboardingModal
+          isOpen={showGuestModal}
+          onClose={() => setShowGuestModal(false)}
+          gameId={gameId}
+          gameTitle="cette partie"
+        />
+      )}
     </VPage>
   )
 }

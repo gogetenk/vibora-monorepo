@@ -31,6 +31,8 @@ import { ShareGameButton } from "@/components/share-game-button"
 import { useGameDetails, useUserProfile } from "@/lib/hooks/use-game-data"
 import { viboraApi } from "@/lib/api/vibora-client"
 import { getSession } from "@/lib/auth/supabase-auth"
+import { isGuestMode, getGuestUser, getGuestToken } from "@/lib/auth/guest-auth"
+import { cache } from "@/lib/hooks/use-offline-data"
 
 export default function GameDetail() {
   const params = useParams()
@@ -48,6 +50,8 @@ export default function GameDetail() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
   const [newMessage, setNewMessage] = useState("")
   const [currentUserExternalId, setCurrentUserExternalId] = useState<string | null>(null)
+  const [isGuest, setIsGuest] = useState(false)
+  const [guestUser, setGuestUser] = useState<ReturnType<typeof getGuestUser>>(null)
   
   // Avoid hydration errors
   useEffect(() => {
@@ -83,13 +87,20 @@ export default function GameDetail() {
     })
   }
 
-  // Récupérer l'utilisateur courant
+  // Récupérer l'utilisateur courant et vérifier le mode invité
   useEffect(() => {
     const fetchCurrentUser = async () => {
       const { session } = await getSession()
       if (session?.user?.id) {
         setCurrentUserExternalId(session.user.id)
       }
+      
+      // Vérifier le mode invité
+      const guestMode = isGuestMode()
+      const guestData = getGuestUser()
+      
+      setIsGuest(guestMode)
+      setGuestUser(guestData)
     }
     fetchCurrentUser()
   }, [])
@@ -200,9 +211,15 @@ export default function GameDetail() {
         description: "Votre place a été libérée pour d'autres joueurs",
       })
 
+      // Clear cache to refresh my games list
+      cache.clear(`vibora_game_${gameId}`)
+      cache.clear('vibora_my_games')
+      cache.clear('vibora_my_games_tabs')
+      cache.clear('vibora_available_games')
+
       setTimeout(() => {
         router.push("/my-games")
-      }, 1500)
+      }, 1000)
 
     } catch (err) {
       console.error("Failed to leave game:", err)
@@ -217,23 +234,47 @@ export default function GameDetail() {
   }
 
   const handleJoinGame = async () => {
-    if (!currentUserExternalId || !currentUserProfile) {
+    // Check authentication status
+    if (!currentUserExternalId && !isGuest) {
       toast({
         variant: "destructive",
         title: "Authentification requise",
         description: "Vous devez être connecté pour rejoindre une partie",
       })
-      router.push(`/auth/login?redirect=/games/${gameId}`)
+      router.push(`/auth/login?redirectTo=/games/${gameId}`)
       return
     }
 
     setIsJoining(true)
 
     try {
-      const { error } = await viboraApi.games.joinGame(gameId, {
-        userName: currentUserProfile.displayName || currentUserProfile.firstName || "Joueur",
-        userSkillLevel: currentUserProfile.skillLevel?.toString() || "5"
-      })
+      let error = null
+      
+      // Use different endpoints for guests vs authenticated users
+      if (isGuest && guestUser) {
+        // Guest users use the /games/{id}/players/guest endpoint
+        const guestToken = getGuestToken()
+        const result = await viboraApi.games.joinGameAsGuest(
+          gameId,
+          {
+            name: guestUser.name,
+            phoneNumber: null, // Already stored during guest creation
+            email: null
+          },
+          guestToken || undefined // Pass guest JWT token
+        )
+        error = result.error
+      } else {
+        // Authenticated users use the /games/{id}/players endpoint
+        const userName = currentUserProfile?.displayName || currentUserProfile?.firstName || "Joueur"
+        const userSkillLevel = currentUserProfile?.skillLevel?.toString() || "5"
+        
+        const result = await viboraApi.games.joinGame(gameId, {
+          userName,
+          userSkillLevel
+        })
+        error = result.error
+      }
 
       if (error) {
         toast({
@@ -249,10 +290,15 @@ export default function GameDetail() {
         description: "Vous pouvez maintenant discuter avec les autres joueurs",
       })
 
+      // Clear cache to force fresh data
+      cache.clear(`vibora_game_${gameId}`)
+      cache.clear('vibora_my_games')
+      cache.clear('vibora_my_games_timestamp')
+      
       // Recharger les données de la partie
       setTimeout(() => {
         window.location.reload()
-      }, 1000)
+      }, 500)
 
     } catch (err) {
       console.error("Failed to join game:", err)
@@ -279,27 +325,56 @@ export default function GameDetail() {
   const pendingInvitations: any[] = []
 
   // Vérifier si l'utilisateur est participant
-  const isParticipant = game && currentUserExternalId && 
-    game.players.some((p: any) => p.id === currentUserExternalId || p.id.includes(currentUserExternalId))
+  // CRITICAL: Always check localStorage directly in case states haven't updated yet
+  // This is especially important after guest account creation
+  const currentGuestMode = typeof window !== 'undefined' ? isGuestMode() : false
+  const currentGuestData = typeof window !== 'undefined' ? getGuestUser() : null
+  const effectiveIsGuest = isGuest || currentGuestMode
+  const effectiveGuestUser = guestUser || currentGuestData
+  
+  const userId = effectiveIsGuest && effectiveGuestUser 
+    ? effectiveGuestUser.externalId 
+    : currentUserExternalId
+  
+  const isParticipant = game && userId && 
+    game.players.some((p: any) => p.id === userId || p.id.includes(userId))
   
   // Vérifier si la partie est complète
   const isFull = game && game.spotsLeft === 0
 
   // Vérifier la compatibilité du niveau de compétence
   const isSkillLevelCompatible = () => {
-    if (!game || !currentUserProfile) return true
+    if (!game) return true
     if (!game.level) return true // Pas de niveau requis
     
-    const playerLevel = currentUserProfile.skillLevel || 5
+    // Si l'utilisateur n'est ni authentifié ni guest, on permet de cliquer
+    // Le handleJoinGame redirigera vers login
+    if (!currentUserExternalId && !effectiveIsGuest) return true
+    
+    const playerLevel = effectiveIsGuest && effectiveGuestUser 
+      ? effectiveGuestUser.skillLevel 
+      : (currentUserProfile?.skillLevel || 5)
     const gameLevel = game.level
     const difference = Math.abs(gameLevel - playerLevel)
+    
+    console.log('🎾 Level Check:', {
+      playerLevel,
+      gameLevel,
+      difference,
+      compatible: difference <= 1,
+      effectiveIsGuest,
+      hasGuestUser: !!effectiveGuestUser,
+      isAuthenticated: !!currentUserExternalId
+    })
     
     return difference <= 1 // Max ±1 niveau d'écart
   }
 
   const skillLevelDifference = () => {
-    if (!game || !currentUserProfile) return 0
-    const playerLevel = currentUserProfile.skillLevel || 5
+    if (!game) return 0
+    const playerLevel = effectiveIsGuest && effectiveGuestUser 
+      ? effectiveGuestUser.skillLevel 
+      : (currentUserProfile?.skillLevel || 5)
     return Math.abs(game.level - playerLevel)
   }
 
@@ -451,14 +526,14 @@ export default function GameDetail() {
                             )}
                           </div>
                           
-                          {/* Message niveau incompatible intégré */}
-                          {!isParticipant && currentUserProfile && !isSkillLevelCompatible() && (
+                          {/* Message niveau incompatible intégré - seulement si authentifié */}
+                          {!isParticipant && (currentUserExternalId || effectiveIsGuest) && !isSkillLevelCompatible() && (
                             <div className="flex items-start gap-2 pt-3 border-t border-amber-500/30">
                               <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
                               <div className="flex-1">
                                 <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Niveau incompatible</p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  Votre niveau ({currentUserProfile.skillLevel || 5}) est trop éloigné du niveau de cette partie (niveau {game.level}). 
+                                  Votre niveau ({effectiveIsGuest && effectiveGuestUser ? effectiveGuestUser.skillLevel : (currentUserProfile?.skillLevel || 5)}) est trop éloigné du niveau de cette partie (niveau {game.level}). 
                                   Seuls les joueurs à ±1 niveau peuvent rejoindre.
                                 </p>
                               </div>

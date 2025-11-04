@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,7 @@ import { Loader2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { viboraApi } from "@/lib/api/vibora-client"
 import { setGuestAuth } from "@/lib/auth/guest-auth"
+import { cache } from "@/lib/hooks/use-offline-data"
 
 interface GuestOnboardingModalProps {
   isOpen: boolean
@@ -37,6 +39,7 @@ export function GuestOnboardingModal({
     name: "",
     phone: "",
     email: "",
+    skillLevel: 5, // Default intermediate level
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,7 +69,7 @@ export function GuestOnboardingModal({
       // Create guest user via API
       const { data, error } = await viboraApi.users.createGuestUser({
         name: formData.name.trim(),
-        skillLevel: 5, // Default: 5 (Intermediate) on 1-10 scale
+        skillLevel: formData.skillLevel,
         phoneNumber: formData.phone.trim() || undefined,
         email: formData.email.trim() || undefined,
       })
@@ -114,8 +117,13 @@ export function GuestOnboardingModal({
         description: "Vous avez rejoint la partie avec succès",
       })
 
-      // Redirect to game details
-      router.push(`/games/${gameId}`)
+      // Clear game cache to force fresh data on reload
+      cache.clear(`vibora_game_${gameId}`)
+      cache.clear('vibora_my_games')
+      cache.clear('vibora_my_games_timestamp')
+      
+      // Force full page reload to refresh game data
+      window.location.href = `/games/${gameId}`
     } catch (err) {
       console.error("Failed to create guest user:", err)
       toast({
@@ -158,6 +166,34 @@ export function GuestOnboardingModal({
               disabled={isLoading}
               autoFocus
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="skillLevel">Niveau de jeu *</Label>
+            <Select
+              value={formData.skillLevel.toString()}
+              onValueChange={(value) => setFormData({ ...formData, skillLevel: parseInt(value) })}
+              disabled={isLoading}
+            >
+              <SelectTrigger id="skillLevel">
+                <SelectValue placeholder="Sélectionnez votre niveau" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 - Débutant</SelectItem>
+                <SelectItem value="2">2 - Débutant avancé</SelectItem>
+                <SelectItem value="3">3 - Intermédiaire</SelectItem>
+                <SelectItem value="4">4 - Intermédiaire avancé</SelectItem>
+                <SelectItem value="5">5 - Confirmé</SelectItem>
+                <SelectItem value="6">6 - Confirmé avancé</SelectItem>
+                <SelectItem value="7">7 - Avancé</SelectItem>
+                <SelectItem value="8">8 - Expert</SelectItem>
+                <SelectItem value="9">9 - Professionnel</SelectItem>
+                <SelectItem value="10">10 - Elite</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Soyez honnête sur votre niveau pour des parties équilibrées
+            </p>
           </div>
 
           <div className="space-y-2">

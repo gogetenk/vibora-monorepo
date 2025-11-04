@@ -127,7 +127,7 @@ export default function Home() {
   }, [])
 
   const handleJoinGame = async (gameId: string) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !currentUser) {
       toast({
         title: "Authentification requise",
         description: "Connectez-vous pour rejoindre une partie",
@@ -138,8 +138,8 @@ export default function Home() {
 
     try {
       const { error } = await viboraApi.games.joinGame(gameId, {
-        userName: currentUser?.displayName || "",
-        userSkillLevel: currentUser?.skillLevel?.toString() || "5",
+        userName: currentUser.displayName || currentUser.firstName ,
+        userSkillLevel: currentUser.skillLevel?.toString(),
       })
       
       if (error) {
@@ -335,7 +335,8 @@ export default function Home() {
                       transition={{ delay: index * 0.05 }}
                     >
                       <Card className="group border border-border/50 hover:border-border hover:shadow-md transition-all duration-200 overflow-hidden">
-                        <CardContent className="p-5">
+                        <Link href={`/games/${game.id}`}>
+                          <CardContent className="p-5 cursor-pointer">
                           <div className="flex items-start gap-4">
                             {/* Avatar */}
                             <Avatar className="w-12 h-12 border-2 border-background shadow-sm shrink-0">
@@ -398,6 +399,7 @@ export default function Home() {
                             </div>
                           </div>
                         </CardContent>
+                        </Link>
                       </Card>
                     </motion.div>
                   )
