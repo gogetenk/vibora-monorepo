@@ -30,7 +30,7 @@ public static class NotificationsModuleServiceRegistrar
         services.AddScoped<INotificationRepository, NotificationRepository>();
 
         // Infrastructure: Register Unit of Work (CRITICAL: isolated per module)
-        services.AddScoped<IUnitOfWork, NotificationsUnitOfWork>();
+        services.AddScoped<NotificationsUnitOfWork>();
 
         // Infrastructure: Register Notification Channels (Strategy Pattern)
         services.AddScoped<INotificationChannel, FcmNotificationChannel>();

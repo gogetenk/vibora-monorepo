@@ -80,11 +80,34 @@ export default function ProfilePage() {
   })
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   
   // Avoid hydration errors
   useEffect(() => {
     setIsMounted(true)
   }, [])
+  
+  // Handle avatar URL with localStorage fallback
+  useEffect(() => {
+    if (!profileData) return
+    
+    if (profileData.profilePhotoUrl) {
+      const fullUrl = profileData.profilePhotoUrl.startsWith('http') 
+        ? profileData.profilePhotoUrl
+        : `${process.env.NEXT_PUBLIC_VIBORA_API_URL}${profileData.profilePhotoUrl}`
+      setAvatarUrl(fullUrl)
+    } else {
+      // Try localStorage as fallback
+      try {
+        const savedPhoto = localStorage.getItem(`profile_photo_${profileData.externalId}`)
+        if (savedPhoto) {
+          setAvatarUrl(savedPhoto)
+        }
+      } catch (e) {
+        console.warn('Could not load photo from localStorage:', e)
+      }
+    }
+  }, [profileData])
 
   // Update edit data when profile loads
   useEffect(() => {
@@ -243,31 +266,24 @@ export default function ProfilePage() {
             <motion.div variants={FADE_IN_ANIMATION_VARIANTS}>
               <div className="flex justify-center">
                 <div className="relative">
-                  {(() => {
-                    const photoUrl = photoPreview || profileData?.profilePhotoUrl
-                    if (photoUrl) {
-                      const fullUrl = photoPreview
-                        ? photoPreview
-                        : `${process.env.NEXT_PUBLIC_VIBORA_API_URL}${profileData?.profilePhotoUrl}`
-                      return (
-                        <Avatar className="w-28 h-28 ring-2 ring-background shadow-lg">
-                          <AvatarImage src={fullUrl} alt="Profile" />
-                          <AvatarFallback className="text-2xl font-bold">
-                            {(profileData?.firstName?.[0] || "").toUpperCase()}
-                            {(profileData?.lastName?.[0] || "").toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      )
-                    }
-                    return (
-                      <Avatar className="w-28 h-28 ring-2 ring-background shadow-lg">
-                        <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 text-primary">
-                          {(profileData?.firstName?.[0] || "").toUpperCase()}
-                          {(profileData?.lastName?.[0] || "").toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    )
-                  })()}
+                  {photoPreview || avatarUrl ? (
+                    <img
+                      src={photoPreview || avatarUrl || ''}
+                      alt="Profile"
+                      className="w-28 h-28 rounded-full object-cover ring-2 ring-background shadow-lg"
+                      onError={(e) => {
+                        console.error('❌ Failed to load profile avatar')
+                        if (!photoPreview) setAvatarUrl(null)
+                      }}
+                    />
+                  ) : (
+                    <Avatar className="w-28 h-28 ring-2 ring-background shadow-lg">
+                      <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 text-primary">
+                        {(profileData?.firstName?.[0] || "").toUpperCase()}
+                        {(profileData?.lastName?.[0] || "").toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                   <button
                     type="button"
                     onClick={() => document.getElementById("photo-upload")?.click()}

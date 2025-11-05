@@ -4,12 +4,10 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MapPin, Users, Calendar, Search, Bell, Plus, CircleDot } from "lucide-react"
+import { MapPin, Users, Calendar, Search, Bell } from "lucide-react"
 import { motion } from "framer-motion"
 import { MobileNav } from "@/components/mobile-nav"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { HomePageSkeleton } from "@/components/home-skeleton"
-import { UserAvatar } from "@/components/user-avatar"
 import { viboraApi } from "@/lib/api/vibora-client"
 import { format, parseISO } from "date-fns"
 import { fr } from "date-fns/locale"
@@ -47,45 +45,13 @@ const FADE_IN_ANIMATION_VARIANTS = {
   show: { opacity: 1, y: 0, transition: { type: "spring" as const } },
 }
 
-// Quick filters data
-const quickFilters = [
-  { id: "tonight", label: "Ce soir", count: 5, active: false },
-  { id: "level", label: "Niveau 5-6", count: 8, active: false },
-  { id: "nearby", label: "À proximité", count: 12, active: true },
-  { id: "morning", label: "Matin", count: 3, active: false },
-]
-
 export default function Home() {
   const { toast } = useToast()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
-  const [filters, setFilters] = useState(quickFilters)
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   // Use offline-first hooks
   const { data: currentUser } = useUserProfile()
-  
-  // Handle avatar URL with localStorage fallback
-  useEffect(() => {
-    if (!currentUser) return
-    
-    if (currentUser.profilePhotoUrl) {
-      const fullUrl = currentUser.profilePhotoUrl.startsWith('http') 
-        ? currentUser.profilePhotoUrl
-        : `${process.env.NEXT_PUBLIC_VIBORA_API_URL}${currentUser.profilePhotoUrl}`
-      setAvatarUrl(fullUrl)
-    } else {
-      // Try localStorage as fallback
-      try {
-        const savedPhoto = localStorage.getItem(`profile_photo_${currentUser.externalId}`)
-        if (savedPhoto) {
-          setAvatarUrl(savedPhoto)
-        }
-      } catch (e) {
-        console.warn('Could not load photo from localStorage:', e)
-      }
-    }
-  }, [currentUser])
   const { data: myGamesData, isLoading: isLoadingMyGames } = useMyGames()
   
   // Memoize my games IDs to prevent infinite re-renders
@@ -97,80 +63,7 @@ export default function Home() {
   
   // Prepare data
   const myGames = myGamesData?.slice(0, 3) || []
-  
-  // Filter available games based on active filters
-  const filteredAvailableGames = useMemo(() => {
-    if (!availableGamesData) return []
-    
-    let filtered = [...availableGamesData]
-    
-    // Apply filters
-    filters.forEach(filter => {
-      if (!filter.active) return
-      
-      switch (filter.id) {
-        case 'tonight':
-          // Filter games happening today
-          filtered = filtered.filter(game => {
-            const gameDate = parseISO(game.dateTime)
-            const today = new Date()
-            return gameDate.toDateString() === today.toDateString()
-          })
-          break
-        case 'level':
-          // Filter by skill level 5-6
-          filtered = filtered.filter(game => 
-            game.skillLevel && game.skillLevel >= 5 && game.skillLevel <= 6
-          )
-          break
-        case 'nearby':
-          // For now, keep all (will implement geo-filtering later)
-          break
-        case 'morning':
-          // Filter games in the morning (before 12:00)
-          filtered = filtered.filter(game => {
-            const gameDate = parseISO(game.dateTime)
-            return gameDate.getHours() < 12
-          })
-          break
-      }
-    })
-    
-    return filtered.slice(0, 5)
-  }, [availableGamesData, filters])
-  
-  const availableGames = filteredAvailableGames
-
-  // Update filter counts dynamically based on real data
-  useEffect(() => {
-    if (!availableGamesData) return
-    
-    const today = new Date()
-    
-    const tonightCount = availableGamesData.filter(game => {
-      const gameDate = parseISO(game.dateTime)
-      return gameDate.toDateString() === today.toDateString()
-    }).length
-    
-    const levelCount = availableGamesData.filter(game => 
-      game.skillLevel && game.skillLevel >= 5 && game.skillLevel <= 6
-    ).length
-    
-    const morningCount = availableGamesData.filter(game => {
-      const gameDate = parseISO(game.dateTime)
-      return gameDate.getHours() < 12
-    }).length
-    
-    setFilters(prev => prev.map(f => {
-      switch (f.id) {
-        case 'tonight': return { ...f, count: tonightCount }
-        case 'level': return { ...f, count: levelCount }
-        case 'nearby': return { ...f, count: availableGamesData.length }
-        case 'morning': return { ...f, count: morningCount }
-        default: return f
-      }
-    }))
-  }, [availableGamesData])
+  const availableGames = availableGamesData?.slice(0, 5) || []
 
   // Check authentication
   useEffect(() => {
@@ -236,38 +129,21 @@ export default function Home() {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg">
         <div className="container flex items-center justify-between h-20">
           <Link href="/settings/profile">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={currentUser?.displayName || "User"}
-                className="w-10 h-10 rounded-full object-cover border-2 border-muted"
-                onError={(e) => {
-                  console.error('❌ Failed to load avatar image:', avatarUrl)
-                  setAvatarUrl(null)
-                }}
-              />
-            ) : (
-              <Avatar className="w-10 h-10 border-2 border-muted">
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                  {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
-            )}
+            <Avatar className="w-10 h-10 border-2 border-muted">
+              <AvatarFallback>{currentUser?.displayName?.[0] || 'U'}</AvatarFallback>
+            </Avatar>
           </Link>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <Button variant="ghost" size="icon" className="rounded-full">
               <Search className="w-5 h-5 text-muted-foreground" />
             </Button>
-            <Link href="/notifications">
-              <Button variant="ghost" size="icon" className="relative rounded-full">
-                <Bell className="w-5 h-5 text-muted-foreground" />
-                <span className="absolute flex w-2.5 h-2.5 top-2 right-2">
-                  <span className="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping bg-primary"></span>
-                  <span className="relative inline-flex w-2.5 h-2.5 rounded-full bg-primary"></span>
-                </span>
-              </Button>
-            </Link>
+            <Button variant="ghost" size="icon" className="relative rounded-full">
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              <span className="absolute flex w-2.5 h-2.5 top-2 right-2">
+                <span className="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping bg-primary"></span>
+                <span className="relative inline-flex w-2.5 h-2.5 rounded-full bg-primary"></span>
+              </span>
+            </Button>
           </div>
         </div>
       </header>
@@ -293,73 +169,26 @@ export default function Home() {
             <span className="text-muted-foreground">prêt à jouer ?</span>
           </motion.h1>
 
-          {/* Quick Filters Section */}
-          <motion.section variants={FADE_IN_ANIMATION_VARIANTS} className="mt-6 relative">
-            <div className="relative w-screen -ml-[50vw] left-1/2">
-              <div className="flex pb-2 space-x-3 overflow-x-auto px-4 scrollbar-hide">
-                {filters.map((filter) => (
-                  <button
-                    key={filter.id}
-                    onClick={() => {
-                      setFilters((prev) =>
-                        prev.map((f) => (f.id === filter.id ? { ...f, active: !f.active } : f))
-                      )
-                    }}
-                    className={`
-                      flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200
-                      ${
-                        filter.active
-                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                          : "bg-secondary/60 text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
-                      }
-                    `}
-                  >
-                    <span>{filter.label}</span>
-                    <span
-                      className={`
-                      px-1.5 py-0.5 rounded-full text-xs font-semibold
-                      ${
-                        filter.active
-                          ? "bg-primary-foreground/20 text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
-                      }
-                    `}
-                    >
-                      {filter.count}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </motion.section>
-
           {/* Upcoming Games Section - Horizontal Scroll with Photos */}
           {isAuthenticated && myGames.length > 0 && (
-            <motion.section variants={FADE_IN_ANIMATION_VARIANTS} className="mt-8 relative">
-              <div className="container">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold">Prochaines parties</h2>
-                  <Link href="/my-games" className="text-sm font-medium text-primary">
-                    Voir tout
-                  </Link>
-                </div>
+            <motion.section variants={FADE_IN_ANIMATION_VARIANTS} className="mt-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold">Prochaines parties</h2>
+                <Link href="/my-games" className="text-sm font-medium text-primary">
+                  Voir tout
+                </Link>
               </div>
-              <div className="relative w-screen -ml-[50vw] left-1/2">
-                <div className="flex pb-4 space-x-4 overflow-x-auto px-4 scrollbar-hide">
+              <div className="relative">
+                <div className="flex pb-4 -mx-4 space-x-4 overflow-x-auto px-4 scrollbar-hide">
                   {myGames.map((game, index) => {
                     const spotsLeft = game.maxPlayers - game.currentPlayers
                     const host = game.participants?.find((p: any) => p.isHost)
                     
                     return (
                       <Link key={game.id} href={`/games/${game.id}`} className="flex-shrink-0 w-[280px]">
-                        <Card className="overflow-hidden transition-all border-none shadow-md bg-secondary/40 hover:shadow-lg active:scale-[0.98]">
-                          <div className="relative h-[150px] w-full">
-                            {/* Court image placeholder */}
-                            <img
-                              src="/og-padel-background.jpg"
-                              alt={game.location}
-                              className="w-full h-full object-cover"
-                            />
+                        <Card className="overflow-hidden transition-all border-none shadow-lg bg-secondary/40 hover:shadow-primary/10 active:scale-[0.98]">
+                          <div className="relative h-[150px] w-full bg-gradient-to-br from-primary/10 to-primary/5">
+                            {/* Placeholder for court image - will be added later */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                             <div className="absolute p-3 bottom-1">
                               <h3 className="font-bold text-white">{game.location}</h3>
@@ -432,7 +261,7 @@ export default function Home() {
                   
                   return (
                     <Link key={game.id} href={`/games/${game.id}`}>
-                      <Card className="overflow-hidden transition-all border-none shadow-sm bg-secondary/40 hover:bg-secondary/60 hover:shadow-md active:scale-[0.99]">
+                      <Card className="overflow-hidden transition-all border-none shadow-md bg-secondary/40 hover:bg-secondary/60 active:scale-[0.99]">
                         <CardContent className="flex items-center gap-4 p-3">
                           {/* Time Badge */}
                           <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-background">

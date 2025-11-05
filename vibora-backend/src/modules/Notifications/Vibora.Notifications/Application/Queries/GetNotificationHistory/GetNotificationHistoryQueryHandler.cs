@@ -44,15 +44,15 @@ internal sealed class GetNotificationHistoryQueryHandler
 
         // Map to DTOs
         var dtos = notifications.Select(n => new NotificationHistoryDto(
-            n.NotificationId,
-            n.Type.ToString(),
-            n.Channel.ToString(),
-            n.Content.Title,
-            n.Content.Body,
-            n.Status.ToString(),
-            n.CreatedAt,
-            n.SentAt,
-            n.IsRead
+            NotificationId: n.NotificationId,
+            Type: n.Type.ToString(),
+            Channel: n.Channel.ToString(),
+            Title: n.Content.Title,
+            Body: n.Content.Body,
+            Status: n.Status.ToString(),
+            CreatedAt: n.CreatedAt,
+            SentAt: n.SentAt,
+            IsRead: n.IsRead
         )).ToList();
 
         return Result<List<NotificationHistoryDto>>.Success(dtos);

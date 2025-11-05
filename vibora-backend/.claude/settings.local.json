@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_snapshot",
+      "Bash(npx next lint:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(taskkill /PID 38236 /F)",
+      "Bash(dotnet clean:*)",
+      "Bash(git add:*)",
+      "Bash(src/modules/Notifications/Vibora.Notifications/Api/NotificationEndpoints.cs )",
+      "Bash(src/modules/Notifications/Vibora.Notifications/Application/Queries/GetNotificationHistory/GetNotificationHistoryQuery.cs )",
+      "Bash(src/modules/Notifications/Vibora.Notifications/Application/Queries/GetNotificationHistory/GetNotificationHistoryQueryHandler.cs )",
+      "Bash(src/modules/Notifications/Vibora.Notifications/Application/Commands/MarkAsRead/ )",
+      "Bash(src/modules/Notifications/Vibora.Notifications/Application/Commands/DeleteNotification/ )",
+      "Bash(src/modules/Notifications/Vibora.Notifications/Domain/Notification.cs )",
+      "Bash(src/modules/Notifications/Vibora.Notifications/Infrastructure/Data/NotificationsDbContext.cs )",
+      "Bash(src/modules/Notifications/Vibora.Notifications/Infrastructure/Data/Migrations/20251105095640_AddIsReadAndDeletedAtToNotification.cs )",
+      "Bash(src/modules/Notifications/Vibora.Notifications/Infrastructure/Data/Migrations/20251105095640_AddIsReadAndDeletedAtToNotification.Designer.cs )",
+      "Bash(src/modules/Notifications/Vibora.Notifications/Infrastructure/Persistence/NotificationRepository.cs)",
+      "Bash(git commit:*)",
+      "Bash(dotnet test:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -231,3 +231,19 @@ export interface SearchGamesResponse {
   perfectMatches: GameMatchDto[]
   partialMatches: GameMatchDto[]
 }
+
+// ============================================================================
+// Notifications Types
+// ============================================================================
+
+export interface NotificationHistoryDto {
+  notificationId: string
+  type: string
+  title: string
+  body: string
+  gameId?: string | null
+  createdAt: string
+  isRead: boolean
+}
+
+export type GetNotificationsResponse = NotificationHistoryDto[]

@@ -39,8 +39,7 @@ public sealed class UsersDbContext : DbContext
                 .HasMaxLength(50);
             
             entity.Property(u => u.SkillLevel)
-                .IsRequired()
-                .HasMaxLength(50);
+                .IsRequired();
 
             entity.Property(u => u.Bio)
                 .HasMaxLength(500);

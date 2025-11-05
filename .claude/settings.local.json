@@ -45,7 +45,9 @@
       "Bash(Get-Date)",
       "Bash(curl:*)",
       "Bash(Select-String -Pattern \"error|warning|Build succeeded|Build FAILED\" -Context 0,1)",
-      "Bash(Select-String -Pattern \"error|warning|Build succeeded|Build FAILED\" -Context 0,2)"
+      "Bash(Select-String -Pattern \"error|warning|Build succeeded|Build FAILED\" -Context 0,2)",
+      "Bash(timeout 30 bash:*)",
+      "Bash(Start-Sleep -Seconds 10)"
     ],
     "deny": [],
     "ask": []

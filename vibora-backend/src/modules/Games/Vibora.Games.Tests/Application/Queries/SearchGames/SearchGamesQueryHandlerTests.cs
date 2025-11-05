@@ -51,7 +51,7 @@ public class SearchGamesQueryHandlerTests
         await context.SaveChangesAsync();
 
         var query = new SearchGamesQuery(
-            When: targetDateTime,
+            When: targetDateTime.ToString("O"),
             Level: 5,
             Latitude: userLat,
             Longitude: userLng,
@@ -103,7 +103,7 @@ public class SearchGamesQueryHandlerTests
         await context.SaveChangesAsync();
 
         var query = new SearchGamesQuery(
-            When: targetDateTime,
+            When: targetDateTime.ToString("O"),
             Level: 5,
             Latitude: userLat,
             Longitude: userLng,
@@ -141,7 +141,7 @@ public class SearchGamesQueryHandlerTests
         await context.SaveChangesAsync();
 
         var query = new SearchGamesQuery(
-            When: targetDateTime,
+            When: targetDateTime.ToString("O"),
             Level: 5,
             Latitude: userLat,
             Longitude: userLng,
@@ -180,7 +180,7 @@ public class SearchGamesQueryHandlerTests
         await context.SaveChangesAsync();
 
         var query = new SearchGamesQuery(
-            When: targetDateTime,
+            When: targetDateTime.ToString("O"),
             Level: 5,
             Latitude: userLat,
             Longitude: userLng,
@@ -219,7 +219,7 @@ public class SearchGamesQueryHandlerTests
         await context.SaveChangesAsync();
 
         var query = new SearchGamesQuery(
-            When: targetDateTime,
+            When: targetDateTime.ToString("O"),
             Level: 5,
             Latitude: userLat,
             Longitude: userLng,
@@ -255,7 +255,7 @@ public class SearchGamesQueryHandlerTests
         await context.SaveChangesAsync();
 
         var query = new SearchGamesQuery(
-            When: targetDateTime,
+            When: targetDateTime.ToString("O"),
             Where: "Casa Padel",
             Level: 5
         );
@@ -296,7 +296,7 @@ public class SearchGamesQueryHandlerTests
         await context.SaveChangesAsync();
 
         var query = new SearchGamesQuery(
-            When: targetDateTime,
+            When: targetDateTime.ToString("O"),
             Level: 5,
             Latitude: userLat,
             Longitude: userLng,
@@ -339,7 +339,7 @@ public class SearchGamesQueryHandlerTests
         await context.SaveChangesAsync();
 
         var query = new SearchGamesQuery(
-            When: targetDateTime,
+            When: targetDateTime.ToString("O"),
             Level: 5,
             Latitude: userLat,
             Longitude: userLng,

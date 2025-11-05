@@ -23,6 +23,8 @@ import type {
   ShareMetadataDto,
   UserProfileDto,
   UpdateUserProfileRequest,
+  NotificationHistoryDto,
+  GetNotificationsResponse,
   ApiResponse,
   ApiErrorResponse,
 } from "./vibora-types"
@@ -382,10 +384,46 @@ export const usersApi = {
 // Exports
 // ============================================================================
 
+// ============================================================================
+// Notifications API
+// ============================================================================
+
+export const notificationsApi = {
+  /**
+   * GET /notifications - Récupère l'historique des notifications de l'utilisateur
+   */
+  async getAll(): Promise<ApiResponse<GetNotificationsResponse>> {
+    return fetchVibora<GetNotificationsResponse>("/notifications")
+  },
+
+  /**
+   * PUT /notifications/{id}/read - Marquer une notification comme lue
+   */
+  async markAsRead(notificationId: string): Promise<ApiResponse<void>> {
+    return fetchVibora<void>(`/notifications/${notificationId}/read`, {
+      method: "PUT",
+    })
+  },
+
+  /**
+   * DELETE /notifications/{id} - Supprimer une notification
+   */
+  async delete(notificationId: string): Promise<ApiResponse<void>> {
+    return fetchVibora<void>(`/notifications/${notificationId}`, {
+      method: "DELETE",
+    })
+  },
+}
+
+// ============================================================================
+// Exports
+// ============================================================================
+
 export const viboraApi = {
   games: gamesApi,
   shares: sharesApi,
   users: usersApi,
+  notifications: notificationsApi,
 }
 
 export default viboraApi
