@@ -4,6 +4,8 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Vibora.Notifications.Application.Commands.DeleteNotification;
+using Vibora.Notifications.Application.Commands.MarkAsRead;
 using Vibora.Notifications.Application.Queries.GetNotificationHistory;
 
 namespace Vibora.Notifications.Api;
@@ -25,6 +27,18 @@ internal static class NotificationEndpoints
             .WithName("GetNotificationHistory")
             .Produces<List<NotificationHistoryDto>>(StatusCodes.Status200OK);
 
+        notificationsGroup.MapPut("/{id}/read", MarkAsRead)
+            .WithName("MarkAsRead")
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound);
+
+        notificationsGroup.MapDelete("/{id}", DeleteNotification)
+            .WithName("DeleteNotification")
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound);
+
         return endpoints;
     }
 
@@ -40,6 +54,36 @@ internal static class NotificationEndpoints
 
         var query = new GetNotificationHistoryQuery(externalId, pageNumber, pageSize);
         var result = await sender.Send(query);
+
+        return result.ToMinimalApiResult();
+    }
+
+    private static async Task<IResult> MarkAsRead(
+        Guid id,
+        HttpContext httpContext,
+        ISender sender)
+    {
+        var externalId = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(externalId))
+            return Results.Unauthorized();
+
+        var command = new MarkAsReadCommand(id, externalId);
+        var result = await sender.Send(command);
+
+        return result.ToMinimalApiResult();
+    }
+
+    private static async Task<IResult> DeleteNotification(
+        Guid id,
+        HttpContext httpContext,
+        ISender sender)
+    {
+        var externalId = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(externalId))
+            return Results.Unauthorized();
+
+        var command = new DeleteNotificationCommand(id, externalId);
+        var result = await sender.Send(command);
 
         return result.ToMinimalApiResult();
     }

@@ -25,5 +25,6 @@ public sealed record NotificationHistoryDto(
     string Body,
     string Status,
     DateTime CreatedAt,
-    DateTime? SentAt
+    DateTime? SentAt,
+    bool IsRead
 );

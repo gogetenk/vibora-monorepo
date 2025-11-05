@@ -51,7 +51,8 @@ internal sealed class GetNotificationHistoryQueryHandler
             n.Content.Body,
             n.Status.ToString(),
             n.CreatedAt,
-            n.SentAt
+            n.SentAt,
+            n.IsRead
         )).ToList();
 
         return Result<List<NotificationHistoryDto>>.Success(dtos);

@@ -51,7 +51,7 @@ internal sealed class NotificationRepository : INotificationRepository
     {
         return await _dbContext.Notifications
             .AsNoTracking() // Read-only query for history
-            .Where(n => n.UserId == userId)
+            .Where(n => n.UserId == userId && n.DeletedAt == null)
             .OrderByDescending(n => n.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)

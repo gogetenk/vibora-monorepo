@@ -58,6 +58,12 @@ public sealed class NotificationsDbContext : DbContext
             entity.Property(n => n.ErrorMessage)
                 .HasMaxLength(1000);
 
+            entity.Property(n => n.IsRead)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            entity.Property(n => n.DeletedAt);
+
             // NotificationContent as Owned Entity (Value Object)
             entity.OwnsOne(n => n.Content, content =>
             {
@@ -92,6 +98,9 @@ public sealed class NotificationsDbContext : DbContext
 
             entity.HasIndex(n => new { n.Status, n.CreatedAt })
                 .HasDatabaseName("IX_Notifications_Status_CreatedAt");
+
+            entity.HasIndex(n => new { n.UserId, n.DeletedAt })
+                .HasDatabaseName("IX_Notifications_UserId_DeletedAt");
 
             // Ignore domain events (not persisted)
             entity.Ignore(n => n.DomainEvents);

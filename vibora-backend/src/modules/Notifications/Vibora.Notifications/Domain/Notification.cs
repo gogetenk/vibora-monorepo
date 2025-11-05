@@ -22,6 +22,8 @@ public sealed class Notification : AggregateRoot
     public DateTime? SentAt { get; private set; }
     public int RetryCount { get; private set; }
     public string? ErrorMessage { get; private set; }
+    public bool IsRead { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
 
     // EF Core constructor
     private Notification() { }
@@ -143,5 +145,29 @@ public sealed class Notification : AggregateRoot
     public bool CanRetry()
     {
         return Status == NotificationStatus.Pending && RetryCount < MaxRetries;
+    }
+
+    /// <summary>
+    /// Mark notification as read
+    /// </summary>
+    public Result MarkAsRead()
+    {
+        if (DeletedAt.HasValue)
+            return Result.Error("Cannot mark deleted notification as read");
+
+        IsRead = true;
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// Soft delete notification
+    /// </summary>
+    public Result SoftDelete()
+    {
+        if (DeletedAt.HasValue)
+            return Result.Error("Notification is already deleted");
+
+        DeletedAt = DateTime.UtcNow;
+        return Result.Success();
     }
 }
