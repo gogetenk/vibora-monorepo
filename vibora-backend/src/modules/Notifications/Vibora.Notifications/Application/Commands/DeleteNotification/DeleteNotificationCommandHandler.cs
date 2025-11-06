@@ -1,7 +1,6 @@
 using Ardalis.Result;
 using MediatR;
 using Vibora.Notifications.Domain;
-using Vibora.Notifications.Infrastructure.Persistence;
 
 namespace Vibora.Notifications.Application.Commands.DeleteNotification;
 
@@ -12,11 +11,11 @@ namespace Vibora.Notifications.Application.Commands.DeleteNotification;
 internal sealed class DeleteNotificationCommandHandler : IRequestHandler<DeleteNotificationCommand, Result>
 {
     private readonly INotificationRepository _repository;
-    private readonly NotificationsUnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
 
     public DeleteNotificationCommandHandler(
         INotificationRepository repository,
-        NotificationsUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;

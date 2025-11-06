@@ -1,23 +1,22 @@
 using Microsoft.Extensions.Logging;
-using Vibora.Users.Contracts.Services;
+using Vibora.Notifications.Domain;
 
 namespace Vibora.Notifications.Application.Services;
 
 /// <summary>
-/// Service to fetch user notification preferences from Users module
-/// Encapsulates cross-module communication via IUsersServiceClient abstraction
-/// Supports both monolith (in-process) and microservices (HTTP) modes
+/// Service to fetch user notification preferences
+/// Uses local UserNotificationPreferencesRepository (no cross-module dependency)
 /// </summary>
-public sealed class UserPreferencesService
+internal sealed class UserPreferencesService
 {
-    private readonly IUsersServiceClient _usersServiceClient;
+    private readonly IUserNotificationPreferencesRepository _preferencesRepository;
     private readonly ILogger<UserPreferencesService> _logger;
 
     public UserPreferencesService(
-        IUsersServiceClient usersServiceClient, 
+        IUserNotificationPreferencesRepository preferencesRepository,
         ILogger<UserPreferencesService> logger)
     {
-        _usersServiceClient = usersServiceClient;
+        _preferencesRepository = preferencesRepository;
         _logger = logger;
     }
 
@@ -29,24 +28,20 @@ public sealed class UserPreferencesService
     {
         try
         {
-            var settingsResult = await _usersServiceClient.GetUserNotificationSettingsAsync(
-                userExternalId, 
+            var preferences = await _preferencesRepository.GetByUserIdAsync(
+                userExternalId,
                 cancellationToken);
 
-            if (!settingsResult.IsSuccess)
+            if (preferences == null)
             {
                 _logger.LogWarning(
-                    "No notification settings found for user {UserExternalId}. Status: {Status}, Errors: {Errors}",
-                    userExternalId,
-                    settingsResult.Status,
-                    string.Join(", ", settingsResult.Errors));
+                    "No notification preferences found for user {UserExternalId}",
+                    userExternalId);
                 return null;
             }
 
-            var settings = settingsResult.Value;
-
             // Only return device token if push is enabled
-            if (!settings.PushEnabled)
+            if (!preferences.PushEnabled)
             {
                 _logger.LogDebug(
                     "Push notifications disabled for user {UserExternalId}",
@@ -54,7 +49,7 @@ public sealed class UserPreferencesService
                 return null;
             }
 
-            if (string.IsNullOrWhiteSpace(settings.DeviceToken))
+            if (string.IsNullOrWhiteSpace(preferences.DeviceToken))
             {
                 _logger.LogWarning(
                     "User {UserExternalId} has push enabled but no device token registered",
@@ -62,7 +57,7 @@ public sealed class UserPreferencesService
                 return null;
             }
 
-            return settings.DeviceToken;
+            return preferences.DeviceToken;
         }
         catch (Exception ex)
         {
@@ -81,20 +76,19 @@ public sealed class UserPreferencesService
     {
         try
         {
-            var settingsResult = await _usersServiceClient.GetUserNotificationSettingsAsync(
-                userExternalId, 
+            var preferences = await _preferencesRepository.GetByUserIdAsync(
+                userExternalId,
                 cancellationToken);
 
-            if (!settingsResult.IsSuccess)
+            if (preferences == null)
             {
                 _logger.LogDebug(
-                    "No notification settings found for user {UserExternalId} - defaulting to disabled. Status: {Status}",
-                    userExternalId,
-                    settingsResult.Status);
+                    "No notification preferences found for user {UserExternalId} - defaulting to disabled",
+                    userExternalId);
                 return false;
             }
 
-            return settingsResult.Value.PushEnabled;
+            return preferences.PushEnabled;
         }
         catch (Exception ex)
         {
@@ -109,23 +103,23 @@ public sealed class UserPreferencesService
     /// Returns dictionary with userId -> deviceToken (only for users with push enabled)
     /// </summary>
     public async Task<Dictionary<string, string>> GetDeviceTokensBatchAsync(
-        IEnumerable<string> userExternalIds, 
+        IEnumerable<string> userExternalIds,
         CancellationToken cancellationToken)
     {
         try
         {
-            var settingsBatch = await _usersServiceClient.GetUserNotificationSettingsBatchAsync(
-                userExternalIds, 
+            var preferencesBatch = await _preferencesRepository.GetBatchAsync(
+                userExternalIds,
                 cancellationToken);
 
             var result = new Dictionary<string, string>();
 
-            foreach (var (userId, settings) in settingsBatch)
+            foreach (var (userId, preferences) in preferencesBatch)
             {
                 // Only include if push enabled and has device token
-                if (settings.PushEnabled && !string.IsNullOrWhiteSpace(settings.DeviceToken))
+                if (preferences.PushEnabled && !string.IsNullOrWhiteSpace(preferences.DeviceToken))
                 {
-                    result[userId] = settings.DeviceToken;
+                    result[userId] = preferences.DeviceToken;
                 }
                 else
                 {

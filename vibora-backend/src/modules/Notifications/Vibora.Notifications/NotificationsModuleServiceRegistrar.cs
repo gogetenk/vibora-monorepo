@@ -26,11 +26,13 @@ public static class NotificationsModuleServiceRegistrar
         // Infrastructure: Register DbContext using Aspire PostgreSQL integration
         builder.AddNpgsqlDbContext<NotificationsDbContext>("viboradb");
 
-        // Infrastructure: Register Repository (scoped per request)
+        // Infrastructure: Register Repositories (scoped per request)
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IUserNotificationPreferencesRepository, UserNotificationPreferencesRepository>();
 
         // Infrastructure: Register Unit of Work (CRITICAL: isolated per module)
-        services.AddScoped<NotificationsUnitOfWork>();
+        // Application interface, Infrastructure implementation
+        services.AddScoped<Notifications.Application.IUnitOfWork, NotificationsUnitOfWork>();
 
         // Infrastructure: Register Notification Channels (Strategy Pattern)
         services.AddScoped<INotificationChannel, FcmNotificationChannel>();

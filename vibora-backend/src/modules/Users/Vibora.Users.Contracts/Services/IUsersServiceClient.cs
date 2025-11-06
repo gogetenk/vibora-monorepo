@@ -14,24 +14,7 @@ public interface IUsersServiceClient
     /// Returns Result with NotFound status if user doesn't exist
     /// </summary>
     Task<Result<UserMetadataDto>> GetUserMetadataAsync(
-        string externalId, 
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets notification settings for a user
-    /// Returns Result with NotFound status if user has no settings configured
-    /// </summary>
-    Task<Result<UserNotificationSettingsDto>> GetUserNotificationSettingsAsync(
-        string userExternalId, 
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets notification settings for multiple users in a single call
-    /// More efficient than multiple individual calls
-    /// Returns dictionary with userId as key
-    /// </summary>
-    Task<Dictionary<string, UserNotificationSettingsDto>> GetUserNotificationSettingsBatchAsync(
-        IEnumerable<string> userExternalIds,
+        string externalId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -64,18 +47,4 @@ public record UserMetadataDto(
     string ExternalId,
     string Name,
     int SkillLevel // 1-10 scale
-);
-
-/// <summary>
-/// DTO for user notification settings
-/// Used for cross-module communication
-/// </summary>
-public record UserNotificationSettingsDto(
-    string UserExternalId,
-    string? DeviceToken,
-    string? PhoneNumber,
-    string? Email,
-    bool PushEnabled,
-    bool SmsEnabled,
-    bool EmailEnabled
 );

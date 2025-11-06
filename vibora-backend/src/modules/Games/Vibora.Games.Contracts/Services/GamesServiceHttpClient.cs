@@ -79,12 +79,12 @@ public sealed class GamesServiceHttpClient : IGamesServiceClient
         {
             var response = await _httpClient.PostAsJsonAsync(
                 "/api/games/guest-participations/convert",
-                new 
-                { 
-                    guestParticipantIds, 
-                    userExternalId, 
-                    userName, 
-                    userSkillLevel 
+                new
+                {
+                    guestParticipantIds,
+                    userExternalId,
+                    userName,
+                    userSkillLevel
                 },
                 cancellationToken);
 
@@ -100,6 +100,36 @@ public sealed class GamesServiceHttpClient : IGamesServiceClient
         {
             // Graceful degradation: return 0 if Games service unavailable
             return 0;
+        }
+    }
+
+    public async Task<List<string>> GetGameParticipantIdsAsync(
+        Guid gameId,
+        string? excludeUserId = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var url = $"/api/games/{gameId}/participants";
+            if (!string.IsNullOrEmpty(excludeUserId))
+            {
+                url += $"?excludeUserId={Uri.EscapeDataString(excludeUserId)}";
+            }
+
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new List<string>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<string>>(cancellationToken);
+            return result ?? new List<string>();
+        }
+        catch
+        {
+            // Graceful degradation: return empty list if Games service unavailable
+            return new List<string>();
         }
     }
 }

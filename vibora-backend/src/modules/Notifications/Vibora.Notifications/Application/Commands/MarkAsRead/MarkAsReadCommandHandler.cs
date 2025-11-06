@@ -1,7 +1,6 @@
 using Ardalis.Result;
 using MediatR;
 using Vibora.Notifications.Domain;
-using Vibora.Notifications.Infrastructure.Persistence;
 
 namespace Vibora.Notifications.Application.Commands.MarkAsRead;
 
@@ -12,11 +11,11 @@ namespace Vibora.Notifications.Application.Commands.MarkAsRead;
 internal sealed class MarkAsReadCommandHandler : IRequestHandler<MarkAsReadCommand, Result>
 {
     private readonly INotificationRepository _repository;
-    private readonly NotificationsUnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
 
     public MarkAsReadCommandHandler(
         INotificationRepository repository,
-        NotificationsUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;

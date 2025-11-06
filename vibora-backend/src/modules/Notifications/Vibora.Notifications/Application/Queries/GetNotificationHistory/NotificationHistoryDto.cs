@@ -13,5 +13,6 @@ public sealed record NotificationHistoryDto(
     string Status,
     DateTime CreatedAt,
     DateTime? SentAt,
-    bool IsRead
+    bool IsRead,
+    string? GameId = null
 );

@@ -95,4 +95,23 @@ public sealed class GamesServiceInProcessClient : IGamesServiceClient
             return 0;
         }
     }
+
+    public async Task<List<string>> GetGameParticipantIdsAsync(
+        Guid gameId,
+        string? excludeUserId = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = new Application.Queries.GetGameParticipantIds.GetGameParticipantIdsQuery(gameId, excludeUserId);
+            var result = await _sender.Send(query, cancellationToken);
+
+            return result.IsSuccess ? result.Value : new List<string>();
+        }
+        catch
+        {
+            // Graceful degradation: return empty list if Games module unavailable
+            return new List<string>();
+        }
+    }
 }

@@ -1,8 +1,13 @@
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Hangfire;
+using Hangfire.PostgreSql;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Vibora.Games;
+using Vibora.Games.Infrastructure.Services;
 using Vibora.Notifications;
 using Vibora.Users;
 using Vibora.Web.Infrastructure;
@@ -12,6 +17,28 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     builder.AddServiceDefaults();
+
+    // Initialize Firebase Admin SDK
+    var firebaseCredPath = builder.Configuration["Firebase:CredentialsPath"] ?? "firebase-adminsdk-mock.json";
+    if (File.Exists(firebaseCredPath))
+    {
+        try
+        {
+            FirebaseApp.Create(new AppOptions
+            {
+                Credential = GoogleCredential.FromFile(firebaseCredPath)
+            });
+            Console.WriteLine($"[FIREBASE] Admin SDK initialized from {firebaseCredPath}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[FIREBASE] Warning: Failed to initialize Firebase. Error: {ex.Message}");
+        }
+    }
+    else
+    {
+        Console.WriteLine($"[FIREBASE] Warning: Firebase credentials file not found at {firebaseCredPath}");
+    }
 
     // Add services to the container
     builder.Services.AddEndpointsApiExplorer();
@@ -42,6 +69,18 @@ try
             cfg.ConfigureEndpoints(context);
         });
     });
+
+    // Configure Hangfire - Background jobs for game reminders
+    // Note: In Aspire, connection string is available under the database name "viboradb"
+    var hangfireConnectionString = builder.Configuration.GetConnectionString("viboradb");
+    builder.Services.AddHangfire(config =>
+    {
+        config.UsePostgreSqlStorage(hangfireConnectionString);
+        config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170);
+        config.UseSimpleAssemblyNameTypeSerializer();
+        config.UseRecommendedSerializerSettings();
+    });
+    builder.Services.AddHangfireServer();
 
     // Global Exception Handler
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -166,11 +205,20 @@ try
     // Output Cache - MUST be after Authentication to access User claims
     app.UseOutputCache();
 
+    // Configure Hangfire Dashboard
+    app.UseHangfireDashboard("/hangfire");
+
     // Map Module Endpoints (Ardalis pattern)
     app.MapUsersEndpoints();
     app.MapGamesEndpoints();
     app.MapNotificationsEndpoints();
     // app.MapCommunicationEndpoints();
+
+    // Register recurring Hangfire jobs - game reminders every 5 minutes
+    RecurringJob.AddOrUpdate<GameReminderService>(
+        "game-reminders-2h",
+        service => service.PublishGameRemindersAsync(),
+        "*/5 * * * *");
 
     await app.RunAsync();
 

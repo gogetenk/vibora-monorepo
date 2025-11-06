@@ -153,7 +153,7 @@ public class TestDataSeeder
     /// <summary>
     /// Seed notification settings for a user
     /// </summary>
-    public async Task<UserNotificationSettings> SeedNotificationSettingsAsync(
+    public async Task<UserNotificationPreferences> SeedNotificationSettingsAsync(
         string userExternalId,
         string? deviceToken = null,
         bool pushEnabled = true,
@@ -161,9 +161,9 @@ public class TestDataSeeder
         bool smsEnabled = false)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<NotificationsDbContext>();
 
-        var settings = UserNotificationSettings.CreateDefault(userExternalId);
+        var settings = UserNotificationPreferences.CreateDefault(userExternalId);
 
         if (deviceToken != null)
         {
@@ -172,7 +172,7 @@ public class TestDataSeeder
 
         settings.UpdatePreferences(pushEnabled, smsEnabled, emailEnabled);
 
-        dbContext.UserNotificationSettings.Add(settings);
+        dbContext.UserNotificationPreferences.Add(settings);
         await dbContext.SaveChangesAsync();
 
         return settings;

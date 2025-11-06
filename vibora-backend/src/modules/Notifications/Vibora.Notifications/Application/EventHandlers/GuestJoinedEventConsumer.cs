@@ -13,7 +13,7 @@ namespace Vibora.Notifications.Application.EventHandlers;
 /// Consumes GuestJoinedEvent from Games module
 /// Sends notification to the host when a guest joins their game
 /// </summary>
-public sealed class GuestJoinedEventConsumer : IConsumer<GuestJoinedEvent>
+internal sealed class GuestJoinedEventConsumer : IConsumer<GuestJoinedEvent>
 {
     private readonly ISender _sender;
     private readonly NotificationTemplateService _templateService;

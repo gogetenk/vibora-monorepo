@@ -14,7 +14,7 @@ public sealed class NotificationTemplateService
     /// <param name="type">Type of notification</param>
     /// <param name="context">Context data for template (game name, player name, etc.)</param>
     /// <returns>NotificationContent with title and body</returns>
-    public NotificationContent GenerateContent(NotificationType type, Dictionary<string, string> context)
+    private NotificationContent GenerateContent(NotificationType type, Dictionary<string, string> context)
     {
         var (title, body) = type switch
         {
@@ -48,6 +48,11 @@ public sealed class NotificationTemplateService
                 $"{context.GetValueOrDefault("senderName", "Un joueur")} : {context.GetValueOrDefault("messagePreview", "a envoyé un message")}"
             ),
 
+            NotificationType.GameCompleted => (
+                "🎉 Partie complète !",
+                $"Votre partie est complète ! Rendez-vous le {context.GetValueOrDefault("date", "bientôt")} à {context.GetValueOrDefault("location", "votre club")}"
+            ),
+
             _ => throw new ArgumentException($"Unknown notification type: {type}", nameof(type))
         };
 
@@ -55,48 +60,44 @@ public sealed class NotificationTemplateService
     }
 
     /// <summary>
-    /// Get default context for a notification type (used for testing/fallback)
+    /// Create base context with common game information (DRY helper)
     /// </summary>
-    public static Dictionary<string, string> GetDefaultContext(NotificationType type)
+    private static Dictionary<string, string> CreateBaseContext(string location, DateTime gameDateTime)
     {
-        return type switch
+        return new Dictionary<string, string>
         {
-            NotificationType.GameCreated => new()
-            {
-                ["hostName"] = "John Doe",
-                ["date"] = "15 Oct 2025 19:00",
-                ["location"] = "Club Padel Paris"
-            },
-
-            NotificationType.PlayerJoined => new()
-            {
-                ["playerName"] = "Jane Smith"
-            },
-
-            NotificationType.PlayerLeft => new()
-            {
-                ["playerName"] = "Jane Smith"
-            },
-
-            NotificationType.GameCancelled => new()
-            {
-                ["date"] = "15 Oct 2025 19:00"
-            },
-
-            NotificationType.GameStartingSoon => new()
-            {
-                ["timeUntil"] = "1 heure",
-                ["location"] = "Club Padel Paris"
-            },
-
-            NotificationType.NewChatMessage => new()
-            {
-                ["senderName"] = "John Doe",
-                ["messagePreview"] = "Salut! On se retrouve 15 min avant?"
-            },
-
-            _ => new Dictionary<string, string>()
+            ["location"] = location,
+            ["date"] = gameDateTime.ToString("dd MMM yyyy HH:mm")
         };
+    }
+
+    /// <summary>
+    /// Build content for game completed notification
+    /// </summary>
+    public NotificationContent BuildGameCompletedContent(
+        string location,
+        DateTime gameDateTime,
+        int maxPlayers)
+    {
+        var context = CreateBaseContext(location, gameDateTime);
+        context["maxPlayers"] = maxPlayers.ToString();
+
+        return GenerateContent(NotificationType.GameCompleted, context);
+    }
+
+    /// <summary>
+    /// Build content for game starting soon notification
+    /// </summary>
+    public NotificationContent BuildGameStartingSoonContent(
+        string location,
+        DateTime gameDateTime,
+        List<string> participantNames)
+    {
+        var context = CreateBaseContext(location, gameDateTime);
+        context["timeUntil"] = "2 heures";
+        context["participants"] = string.Join(", ", participantNames);
+
+        return GenerateContent(NotificationType.GameStartingSoon, context);
     }
 
     /// <summary>
@@ -104,12 +105,7 @@ public sealed class NotificationTemplateService
     /// </summary>
     public NotificationContent BuildGameCanceledContent(string location, DateTime gameDateTime)
     {
-        var context = new Dictionary<string, string>
-        {
-            ["date"] = gameDateTime.ToString("dd MMM yyyy HH:mm"),
-            ["location"] = location
-        };
-
+        var context = CreateBaseContext(location, gameDateTime);
         return GenerateContent(NotificationType.GameCancelled, context);
     }
 
@@ -118,12 +114,8 @@ public sealed class NotificationTemplateService
     /// </summary>
     public NotificationContent BuildPlayerJoinedContent(string playerName, string location, DateTime gameDateTime)
     {
-        var context = new Dictionary<string, string>
-        {
-            ["playerName"] = playerName,
-            ["date"] = gameDateTime.ToString("dd MMM yyyy HH:mm"),
-            ["location"] = location
-        };
+        var context = CreateBaseContext(location, gameDateTime);
+        context["playerName"] = playerName;
 
         return GenerateContent(NotificationType.PlayerJoined, context);
     }
@@ -133,12 +125,8 @@ public sealed class NotificationTemplateService
     /// </summary>
     public NotificationContent BuildGuestJoinedContent(string guestName, string location, DateTime gameDateTime)
     {
-        var context = new Dictionary<string, string>
-        {
-            ["playerName"] = guestName,
-            ["date"] = gameDateTime.ToString("dd MMM yyyy HH:mm"),
-            ["location"] = location
-        };
+        var context = CreateBaseContext(location, gameDateTime);
+        context["playerName"] = guestName;
 
         return GenerateContent(NotificationType.PlayerJoined, context);
     }
@@ -148,12 +136,8 @@ public sealed class NotificationTemplateService
     /// </summary>
     public NotificationContent BuildPlayerLeftContent(string playerName, string location, DateTime gameDateTime)
     {
-        var context = new Dictionary<string, string>
-        {
-            ["playerName"] = playerName,
-            ["date"] = gameDateTime.ToString("dd MMM yyyy HH:mm"),
-            ["location"] = location
-        };
+        var context = CreateBaseContext(location, gameDateTime);
+        context["playerName"] = playerName;
 
         return GenerateContent(NotificationType.PlayerLeft, context);
     }

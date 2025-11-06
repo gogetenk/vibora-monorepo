@@ -247,3 +247,21 @@ export interface NotificationHistoryDto {
 }
 
 export type GetNotificationsResponse = NotificationHistoryDto[]
+
+// ============================================================================
+// User Notification Preferences Types
+// ============================================================================
+
+export interface NotificationPreferencesDto {
+  pushEnabled: boolean
+  emailEnabled: boolean
+  smsEnabled: boolean
+  typePreferences: Record<string, boolean>
+}
+
+export interface UpdateNotificationPreferencesRequest {
+  pushEnabled: boolean
+  emailEnabled: boolean
+  smsEnabled: boolean
+  typePreferences: Record<string, boolean>
+}

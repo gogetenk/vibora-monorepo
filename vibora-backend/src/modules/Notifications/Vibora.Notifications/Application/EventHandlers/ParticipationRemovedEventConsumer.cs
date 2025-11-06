@@ -1,7 +1,9 @@
+using Ardalis.Result;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Vibora.Games.Contracts.Events;
+using Vibora.Games.Contracts.Services;
 using Vibora.Notifications.Application.Commands.SendNotification;
 using Vibora.Notifications.Application.Services;
 using Vibora.Notifications.Domain;
@@ -11,24 +13,27 @@ namespace Vibora.Notifications.Application.EventHandlers;
 
 /// <summary>
 /// Consumes ParticipationRemovedEvent from Games module
-/// Sends notification to the host when a player leaves their game
+/// Sends notification to the host and all remaining participants when a player leaves
 /// </summary>
-public sealed class ParticipationRemovedEventConsumer : IConsumer<ParticipationRemovedEvent>
+internal sealed class ParticipationRemovedEventConsumer : IConsumer<ParticipationRemovedEvent>
 {
     private readonly ISender _sender;
     private readonly NotificationTemplateService _templateService;
     private readonly UserPreferencesService _userPreferencesService;
+    private readonly IGamesServiceClient _gamesServiceClient;
     private readonly ILogger<ParticipationRemovedEventConsumer> _logger;
 
     public ParticipationRemovedEventConsumer(
         ISender sender,
         NotificationTemplateService templateService,
         UserPreferencesService userPreferencesService,
+        IGamesServiceClient gamesServiceClient,
         ILogger<ParticipationRemovedEventConsumer> logger)
     {
         _sender = sender;
         _templateService = templateService;
         _userPreferencesService = userPreferencesService;
+        _gamesServiceClient = gamesServiceClient;
         _logger = logger;
     }
 
@@ -40,43 +45,56 @@ public sealed class ParticipationRemovedEventConsumer : IConsumer<ParticipationR
             "Processing ParticipationRemovedEvent: {UserName} left game {GameId}",
             @event.UserName, @event.GameId);
 
-        // Build notification content for host
+        // Build notification content
         var content = _templateService.BuildPlayerLeftContent(
             @event.UserName,
             @event.Location,
             @event.GameDateTime);
 
-        // Fetch host's device token from Users module (supports monolith & microservices)
-        var deviceToken = await _userPreferencesService.GetUserDeviceTokenAsync(
-            @event.HostExternalId, 
+        // Collect all user IDs to notify: host + remaining participants
+        var userIdsToNotify = new List<string> { @event.HostExternalId };
+
+        // Get remaining participant IDs (excluding the user who just left)
+        var remainingParticipantIds = await _gamesServiceClient.GetGameParticipantIdsAsync(
+            @event.GameId,
+            @event.UserExternalId,
             context.CancellationToken);
 
-        if (string.IsNullOrWhiteSpace(deviceToken))
+        userIdsToNotify.AddRange(remainingParticipantIds);
+
+        // Fetch device tokens for all users in a single batch call
+        var deviceTokens = await _userPreferencesService.GetDeviceTokensBatchAsync(
+            userIdsToNotify,
+            context.CancellationToken);
+
+        if (deviceTokens.Count == 0)
         {
             _logger.LogWarning(
-                "Skipping ParticipationRemoved notification for host {HostExternalId} - no device token or push disabled",
-                @event.HostExternalId);
+                "No device tokens found for any participants in game {GameId} - skipping notifications",
+                @event.GameId);
             return;
         }
 
-        // Notify host
-        var command = new SendNotificationCommand(
-            @event.HostExternalId,
-            NotificationType.PlayerLeft,
-            NotificationChannel.Push,
-            deviceToken,
-            content);
+        // Send notifications to all users with valid device tokens
+        var notificationTasks = new List<Task<Result<Guid>>>();
 
-        var result = await _sender.Send(command, context.CancellationToken);
+        foreach (var (userId, token) in deviceTokens)
+        {
+            var command = new SendNotificationCommand(
+                userId,
+                NotificationType.PlayerLeft,
+                NotificationChannel.Push,
+                token,
+                content);
 
-        if (result.IsSuccess)
-        {
-            _logger.LogInformation("ParticipationRemoved notification sent to host successfully");
+            notificationTasks.Add(_sender.Send(command, context.CancellationToken));
         }
-        else
-        {
-            _logger.LogError("Failed to send ParticipationRemoved notification: {Errors}",
-                string.Join(", ", result.Errors));
-        }
+
+        await Task.WhenAll(notificationTasks);
+
+        _logger.LogInformation(
+            "ParticipationRemoved notifications sent: {NotificationCount} recipients notified for game {GameId}",
+            deviceTokens.Count,
+            @event.GameId);
     }
 }

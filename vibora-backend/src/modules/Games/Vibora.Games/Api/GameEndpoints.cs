@@ -15,6 +15,7 @@ using Vibora.Games.Application.Commands.JoinGameAsGuest;
 using Vibora.Games.Application.Commands.LeaveGame;
 using Vibora.Games.Application.Queries.GetAvailableGames;
 using Vibora.Games.Application.Queries.GetGameDetails;
+using Vibora.Games.Application.Queries.GetGameParticipantIds;
 using Vibora.Games.Application.Queries.GetGuestParticipationsByContact;
 using Vibora.Games.Application.Queries.GetMyGames;
 using Vibora.Games.Application.Queries.GetShareByToken;
@@ -169,6 +170,10 @@ internal static class GameEndpoints
         gamesGroup.MapPost("/guest-participations/convert", ConvertGuestParticipationsEndpoint)
             .WithName("ConvertGuestParticipations")
             .Produces<ConvertGuestParticipationsApiResponse>(StatusCodes.Status200OK);
+
+        gamesGroup.MapGet("/{id:guid}/participants", GetGameParticipantIds)
+            .WithName("GetGameParticipantIds")
+            .Produces<List<string>>(StatusCodes.Status200OK);
 
         return endpoints;
     }
@@ -466,6 +471,22 @@ internal static class GameEndpoints
         return result.IsSuccess
             ? Results.Ok(new ConvertGuestParticipationsApiResponse(result.Value.ConvertedCount))
             : Results.Ok(new ConvertGuestParticipationsApiResponse(0)); // Graceful degradation
+    }
+
+    // GET /games/{id}/participants - Get all participant IDs for a game
+    // Used by Notifications module to send multi-recipient notifications
+    private static async Task<HttpResult> GetGameParticipantIds(
+        Guid id,
+        ISender sender,
+        [FromQuery] string? excludeUserId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetGameParticipantIdsQuery(id, excludeUserId);
+        var result = await sender.Send(query, cancellationToken);
+
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : Results.Ok(new List<string>()); // Graceful degradation
     }
 }
 

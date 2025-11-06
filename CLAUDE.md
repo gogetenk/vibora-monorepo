@@ -172,6 +172,40 @@ Aspire orchestrates migrations via dedicated worker:
 - .NET 9, EF Core, PostgreSQL, MediatR, MassTransit (InMemory), Ardalis.Result
 - xUnit + FluentAssertions + TestContainers for integration tests
 
+## Integration Tests Configuration
+
+**CRITICAL TestContainers Setup**:
+
+```csharp
+// Use PostGIS image (NOT standard postgres) - required for Games GPS features
+_postgresContainer = new PostgreSqlBuilder()
+    .WithImage("postgis/postgis:17-3.5")  // ✅ Correct
+    .WithDatabase("viboradb_test")
+    .WithUsername("postgres")
+    .WithPassword("postgres")
+    .Build();
+
+// Disable Hangfire in tests (causes connection issues and interference)
+var hangfireServerDescriptor = services.FirstOrDefault(d =>
+    d.ServiceType.FullName == "Hangfire.IBackgroundProcessingServer");
+if (hangfireServerDescriptor != null)
+{
+    services.Remove(hangfireServerDescriptor);
+}
+
+// Configure case-insensitive JSON for test flexibility (camelCase or PascalCase)
+services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.PropertyNameCaseInsensitive = true;
+});
+```
+
+**Test Rules**:
+- NEVER use `postgres:17-alpine` image (missing PostGIS extension)
+- ALWAYS disable Hangfire server in test environment
+- Integration tests MUST pass before any commit
+- Test cleanup MUST delete child tables before parent tables (FK constraints)
+
 ## Authentication
 
 **JWT from Supabase**:
@@ -186,13 +220,55 @@ Aspire orchestrates migrations via dedicated worker:
 
 Files: `JoinGameAsGuestCommandHandler.cs`, `SyncUserCommandHandler.cs:84-120`
 
+## Notifications Architecture
+
+**Event-Driven System** - Notifications are created ONLY when domain events occur:
+
+```
+Domain Event → MassTransit → Event Consumer → Notification Creation
+```
+
+**Flow Example**:
+1. User joins game → `PlayerJoinedDomainEvent` raised
+2. `UnitOfWork.SaveChangesAsync()` publishes event via MassTransit
+3. `PlayerJoinedEventConsumer` receives event
+4. Consumer calls `NotificationTemplateService.BuildPlayerJoinedContent(playerName, location, date)`
+5. Notification stored in DB → sent via FCM/email/SMS based on user preferences
+
+**Template Service Rules**:
+- Use dynamic context from events (player names, game details, etc.)
+- NO hardcoded test data in production code
+- Templates follow format: `BuildXXXContent(params) → GenerateContent(type, context)`
+- Apply DRY: Common fields (location, date) extracted via `CreateBaseContext()` helper
+
+**Debugging "No notifications"**:
+- Notifications require user actions (join game, cancel game, etc.)
+- Empty notifications table = No events triggered yet (expected on fresh app)
+- Test flow: Create game → Another user joins → Host receives notification
+
 ## Common Gotchas
 
 1. **Module visibility**: All classes MUST be `internal` except `*ModuleServiceRegistrar`
+   - Exception: Domain entities may be `public` if needed by integration tests
+   - NEVER expose Application/Infrastructure classes across modules
+
 2. **Migrations**: Always use `--startup-project src/Vibora.MigrationService` for EF commands
+
 3. **Domain events**: Use `UnitOfWork.SaveChangesAsync()` to commit + publish atomically
+
 4. **Cross-module calls**: Use `IUsersServiceClient`/`IGamesServiceClient` interfaces only
+
 5. **Result pattern**: Check `result.IsSuccess` before accessing `result.Value`
+
+6. **Module boundaries**: Respect domain ownership - UserNotificationPreferences belongs in Notifications module (user-specific notifications config), NOT in Users module (core identity)
+
+7. **No hardcoded test data in services**: Services must use dynamic context, NEVER hardcoded values like "John Doe" or "Club Padel Paris" (use templates with parameters)
+
+8. **Code quality checklist before commit**:
+   - Remove dead code (unused methods, commented code)
+   - Apply DRY (extract helper methods for repeated logic)
+   - Keep methods private by default (public only when exposed via contracts)
+   - Run ALL tests (unit + integration) - NO RED TESTS allowed
 
 ---
 

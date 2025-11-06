@@ -13,7 +13,7 @@ namespace Vibora.Notifications.Application.EventHandlers;
 /// Consumes GameCanceledEvent from Games module
 /// Sends notification to all participants when a game is canceled
 /// </summary>
-public sealed class GameCanceledEventConsumer : IConsumer<GameCanceledEvent>
+internal sealed class GameCanceledEventConsumer : IConsumer<GameCanceledEvent>
 {
     private readonly ISender _sender;
     private readonly NotificationTemplateService _templateService;

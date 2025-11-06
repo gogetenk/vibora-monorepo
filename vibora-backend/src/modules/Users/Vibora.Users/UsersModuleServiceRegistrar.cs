@@ -29,7 +29,6 @@ public static class UsersModuleServiceRegistrar
 
         // Infrastructure: Register Repositories (scoped per request)
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IUserNotificationSettingsRepository, UserNotificationSettingsRepository>();
 
         // Infrastructure: Register Unit of Work (Application interface, Infrastructure implementation)
         // Clean Architecture: Application defines the contract, Infrastructure implements it

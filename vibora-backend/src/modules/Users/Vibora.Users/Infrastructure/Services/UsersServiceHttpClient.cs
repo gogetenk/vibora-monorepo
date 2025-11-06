@@ -40,7 +40,7 @@ public sealed class UsersServiceHttpClient : IUsersServiceClient
                     response.StatusCode,
                     errorContent
                 );
-                
+
                 return response.StatusCode == System.Net.HttpStatusCode.NotFound
                     ? Result<UserMetadataDto>.NotFound($"User {externalId} not found")
                     : Result<UserMetadataDto>.Error($"HTTP {response.StatusCode}: {errorContent}");
@@ -55,69 +55,6 @@ public sealed class UsersServiceHttpClient : IUsersServiceClient
         {
             _logger.LogError(ex, "Exception in GetUserMetadataAsync for {ExternalId}", externalId);
             return Result<UserMetadataDto>.Error(ex.Message);
-        }
-    }
-
-    public async Task<Result<UserNotificationSettingsDto>> GetUserNotificationSettingsAsync(
-        string userExternalId,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var response = await _httpClient.GetAsync(
-                $"/api/users/{userExternalId}/notification-settings", 
-                cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-                _logger.LogWarning(
-                    "GetUserNotificationSettingsAsync HTTP call failed for {UserExternalId}. Status: {StatusCode}, Error: {Error}",
-                    userExternalId,
-                    response.StatusCode,
-                    errorContent
-                );
-                
-                return response.StatusCode == System.Net.HttpStatusCode.NotFound
-                    ? Result<UserNotificationSettingsDto>.NotFound($"Settings for user {userExternalId} not found")
-                    : Result<UserNotificationSettingsDto>.Error($"HTTP {response.StatusCode}: {errorContent}");
-            }
-
-            var settingsDto = await response.Content.ReadFromJsonAsync<UserNotificationSettingsDto>(cancellationToken);
-            return settingsDto != null
-                ? Result<UserNotificationSettingsDto>.Success(settingsDto)
-                : Result<UserNotificationSettingsDto>.Error("Failed to deserialize notification settings");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Exception in GetUserNotificationSettingsAsync for {UserExternalId}", userExternalId);
-            return Result<UserNotificationSettingsDto>.Error(ex.Message);
-        }
-    }
-
-    public async Task<Dictionary<string, UserNotificationSettingsDto>> GetUserNotificationSettingsBatchAsync(
-        IEnumerable<string> userExternalIds,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            // Call batch endpoint
-            var response = await _httpClient.PostAsJsonAsync(
-                "/api/users/notification-settings/batch", 
-                userExternalIds,
-                cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return new Dictionary<string, UserNotificationSettingsDto>();
-            }
-
-            var result = await response.Content.ReadFromJsonAsync<Dictionary<string, UserNotificationSettingsDto>>(cancellationToken);
-            return result ?? new Dictionary<string, UserNotificationSettingsDto>();
-        }
-        catch
-        {
-            return new Dictionary<string, UserNotificationSettingsDto>();
         }
     }
 

@@ -67,8 +67,10 @@ When reviewing Backend Developer work, verify:
 
 ### ✅ Module Boundaries
 - [ ] All classes `internal` except ServiceRegistrar and Contracts
+- [ ] Exception: Domain entities may be `public` if needed by integration tests
 - [ ] No direct references between module implementations
 - [ ] Cross-module calls via `IUsersServiceClient` (Strategy Pattern)
+- [ ] **Domain ownership respected**: User preferences for notifications belong in Notifications module, NOT in Users module (Users = core identity only)
 
 ### ✅ Domain Layer
 - [ ] Aggregates inherit `AggregateRoot` (from Vibora.Shared)
@@ -105,12 +107,20 @@ When reviewing Backend Developer work, verify:
 - [ ] Unit tests for domain logic + handlers
 - [ ] Integration tests with TestContainers + WebApplicationFactory
 - [ ] FluentAssertions for readability
+- [ ] **CRITICAL**: TestContainers MUST use `postgis/postgis:17-3.5` image (NOT `postgres:17-alpine`)
+- [ ] Hangfire server MUST be disabled in test environment
+- [ ] JSON serialization configured as case-insensitive for tests
+- [ ] ALL tests MUST pass before code review approval (NO RED TESTS ALLOWED)
 
 ### ✅ Quality Standards
-- [ ] SOLID principles
+- [ ] SOLID principles (especially DRY - extract helper methods for repeated logic)
 - [ ] No over-engineering (YAGNI)
 - [ ] Guard clauses for validation
 - [ ] Meaningful names (no abbreviations)
+- [ ] **NO hardcoded test data in services** (e.g., "John Doe", "Club Padel Paris")
+- [ ] All services use dynamic context from events/parameters
+- [ ] Dead code removed (unused methods, commented blocks)
+- [ ] Methods private by default (public only when exposed via contracts)
 
 ## Reference Documentation
 
@@ -175,12 +185,17 @@ When evaluating architectural choices, ask:
 
 ## Common Anti-Patterns to Reject
 
-- ❌ Public domain classes outside Contracts
+- ❌ Public domain classes outside Contracts (exception: if needed by integration tests)
 - ❌ Direct module-to-module references
 - ❌ Throwing exceptions for business errors
 - ❌ Publishing domain events directly (bypass UnitOfWork)
 - ❌ Nested DTOs in API responses
 - ❌ Premature abstractions (YAGNI violation)
+- ❌ **Misplaced domain ownership**: User-specific notification preferences in Users module (should be in Notifications)
+- ❌ **Hardcoded test data in services**: Methods like `GetDefaultContext()` with "John Doe", "Club Padel Paris"
+- ❌ **Dead code not removed**: Unused methods that are never called
+- ❌ **Public by default**: Services with public methods that should be private
+- ❌ **Wrong PostgreSQL image in tests**: Using `postgres:17-alpine` instead of `postgis/postgis:17-3.5`
 
 ## Success Metrics
 

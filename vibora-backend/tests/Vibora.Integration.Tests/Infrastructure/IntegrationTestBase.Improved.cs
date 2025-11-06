@@ -76,9 +76,9 @@ public abstract class IntegrationTestBaseImproved : IClassFixture<ViboraWebAppli
 
         // Notifications module
         await notificationsDb.Database.ExecuteSqlRawAsync("DELETE FROM \"Notifications\"");
+        await notificationsDb.Database.ExecuteSqlRawAsync("DELETE FROM \"UserNotificationPreferences\"");
 
         // Users module (last because of FKs)
-        await usersDb.Database.ExecuteSqlRawAsync("DELETE FROM \"UserNotificationSettings\"");
         await usersDb.Database.ExecuteSqlRawAsync("DELETE FROM \"Users\"");
     }
 

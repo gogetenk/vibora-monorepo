@@ -29,9 +29,9 @@ public class ViboraWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     public async Task InitializeAsync()
     {
-        // Create and start PostgreSQL container
+        // Create and start PostgreSQL container with PostGIS extension
         _postgresContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:17-alpine")
+            .WithImage("postgis/postgis:17-3.5")
             .WithDatabase("viboradb_test")
             .WithUsername("postgres")
             .WithPassword("postgres")
@@ -108,6 +108,24 @@ public class ViboraWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             // This allows consumers to actually execute and create notifications in the database
             // Add test harness on top for observation (Published.Any verification)
             services.AddMassTransitTestHarness();
+
+            // Remove Hangfire server (background jobs not needed in tests)
+            var hangfireServerDescriptor = services.FirstOrDefault(d =>
+                d.ServiceType.FullName == "Hangfire.IBackgroundProcessingServer");
+            if (hangfireServerDescriptor != null)
+            {
+                services.Remove(hangfireServerDescriptor);
+            }
+
+            // Configure JSON options to be case-insensitive for tests (allows camelCase in test requests)
+            services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+            {
+                options.SerializerOptions.PropertyNameCaseInsensitive = true;
+            });
+            services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+            {
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            });
         });
     }
 

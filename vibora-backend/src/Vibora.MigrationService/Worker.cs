@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Vibora.Games.Infrastructure.Data;
+using Vibora.Notifications.Infrastructure.Data;
 using Vibora.Users.Infrastructure.Data;
 
 namespace Vibora.MigrationService;
@@ -33,15 +34,19 @@ public class Worker : BackgroundService
         try
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
-            
+
             var gamesDbContext = scope.ServiceProvider.GetRequiredService<GamesDbContext>();
             var usersDbContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+            var notificationsDbContext = scope.ServiceProvider.GetRequiredService<NotificationsDbContext>();
 
             // Apply migrations for Games module
             await ApplyMigrationsAsync(gamesDbContext, "GamesDbContext", stoppingToken);
-            
+
             // Apply migrations for Users module
             await ApplyMigrationsAsync(usersDbContext, "UsersDbContext", stoppingToken);
+
+            // Apply migrations for Notifications module
+            await ApplyMigrationsAsync(notificationsDbContext, "NotificationsDbContext", stoppingToken);
 
             _logger.LogInformation("All migrations completed successfully");
         }

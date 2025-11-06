@@ -6,11 +6,12 @@ namespace Vibora.Notifications.Infrastructure.Data;
 
 /// <summary>
 /// DbContext for the Notifications module
-/// Manages Notification aggregate and its entities
+/// Manages Notification aggregate and UserNotificationPreferences
 /// </summary>
 public sealed class NotificationsDbContext : DbContext
 {
     public DbSet<Notification> Notifications => Set<Notification>();
+    internal DbSet<UserNotificationPreferences> UserNotificationPreferences => Set<UserNotificationPreferences>();
 
     public NotificationsDbContext(DbContextOptions<NotificationsDbContext> options) : base(options)
     {
@@ -104,6 +105,48 @@ public sealed class NotificationsDbContext : DbContext
 
             // Ignore domain events (not persisted)
             entity.Ignore(n => n.DomainEvents);
+        });
+
+        modelBuilder.Entity<UserNotificationPreferences>(entity =>
+        {
+            entity.ToTable("UserNotificationPreferences");
+
+            // UserExternalId is the PRIMARY KEY
+            entity.HasKey(p => p.UserExternalId);
+
+            entity.Property(p => p.UserExternalId)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(p => p.DeviceToken)
+                .HasMaxLength(500);
+
+            entity.Property(p => p.PhoneNumber)
+                .HasMaxLength(20);
+
+            entity.Property(p => p.Email)
+                .HasMaxLength(255);
+
+            entity.Property(p => p.PushEnabled)
+                .IsRequired()
+                .HasDefaultValue(true);
+
+            entity.Property(p => p.SmsEnabled)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            entity.Property(p => p.EmailEnabled)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            entity.Property(p => p.CreatedAt)
+                .IsRequired();
+
+            entity.Property(p => p.UpdatedAt)
+                .IsRequired();
+
+            // Ignore domain events (not persisted)
+            entity.Ignore(p => p.DomainEvents);
         });
     }
 }

@@ -168,4 +168,35 @@ internal sealed class GameRepository : IGameRepository
     {
         _dbContext.GuestParticipants.Remove(guestParticipant);
     }
+
+    public async Task<List<string>> GetGameParticipantUserIdsAsync(
+        Guid gameId,
+        string? excludeUserExternalId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var userIds = await _dbContext.Participations
+            .AsNoTracking()
+            .Where(p => p.GameId == gameId)
+            .Select(p => p.UserExternalId)
+            .Where(id => excludeUserExternalId == null || id != excludeUserExternalId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        return userIds;
+    }
+
+    public async Task<List<Game>> GetGamesStartingInTimeWindowAsync(
+        DateTime fromTime,
+        DateTime toTime,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Games
+            .Include(g => g.Participations)
+            .Include(g => g.GuestParticipants)
+            .AsNoTracking() // Read-only query
+            .AsSplitQuery() // Avoid cartesian explosion
+            .Where(g => g.DateTime >= fromTime && g.DateTime <= toTime && g.Status != GameStatus.Canceled)
+            .OrderBy(g => g.DateTime)
+            .ToListAsync(cancellationToken);
+    }
 }

@@ -181,6 +181,31 @@ public void AddParticipant_WhenGameFull_ShouldReturnError()
 ```
 
 ### Integration Tests (E2E with TestContainers)
+
+**CRITICAL TestContainers Setup**:
+```csharp
+// ✅ Use PostGIS image (NOT standard postgres) - required for Games GPS features
+_postgresContainer = new PostgreSqlBuilder()
+    .WithImage("postgis/postgis:17-3.5")  // NEVER use postgres:17-alpine
+    .WithDatabase("viboradb_test")
+    .WithUsername("postgres")
+    .WithPassword("postgres")
+    .Build();
+
+// ✅ Disable Hangfire in tests (causes connection issues)
+var hangfireServerDescriptor = services.FirstOrDefault(d =>
+    d.ServiceType.FullName == "Hangfire.IBackgroundProcessingServer");
+if (hangfireServerDescriptor != null)
+    services.Remove(hangfireServerDescriptor);
+
+// ✅ Configure case-insensitive JSON for test flexibility
+services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.PropertyNameCaseInsensitive = true;
+});
+```
+
+**Integration Test Example**:
 ```csharp
 public class CreateGameTests : IntegrationTestBase
 {
@@ -196,6 +221,12 @@ public class CreateGameTests : IntegrationTestBase
     }
 }
 ```
+
+**Test Rules**:
+- NEVER commit with failing tests (red tests are UNACCEPTABLE)
+- Use PostGIS image for all integration tests
+- Disable Hangfire in test environment
+- Test cleanup MUST delete child tables before parent tables (FK constraints)
 
 ## Development Workflow
 
@@ -222,9 +253,12 @@ For each feature:
 - ❌ Throwing exceptions for business errors (use Result)
 - ❌ Publishing events directly in domain
 - ❌ Nested DTOs in API responses
-- ❌ Public classes in module implementation
+- ❌ Public classes in module implementation (exception: domain entities if needed by integration tests)
 - ❌ Direct module-to-module calls (use IUsersServiceClient)
 - ❌ Skipping tests
+- ❌ **Hardcoded test data in services** (e.g., "John Doe", "Club Padel Paris") - use dynamic context from events
+- ❌ **Leaving dead code** (unused methods, commented code blocks)
+- ❌ **Public methods by default** - keep everything private unless exposed via contracts
 
 ## Success Criteria
 

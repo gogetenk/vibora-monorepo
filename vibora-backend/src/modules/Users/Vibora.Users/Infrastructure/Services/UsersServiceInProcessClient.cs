@@ -58,7 +58,7 @@ public sealed class UsersServiceInProcessClient : IUsersServiceClient
             }
 
             var userMetadata = result.Value;
-            
+
             return Result<UserMetadataDto>.Success(new UserMetadataDto(
                 userMetadata.ExternalId,
                 userMetadata.Name,
@@ -70,74 +70,6 @@ public sealed class UsersServiceInProcessClient : IUsersServiceClient
             _logger.LogError(ex, "Exception in GetUserMetadataAsync for {ExternalId}", externalId);
             return Result<UserMetadataDto>.Error(ex.Message);
         }
-    }
-
-    public async Task<Result<UserNotificationSettingsDto>> GetUserNotificationSettingsAsync(
-        string userExternalId,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var query = new GetUserNotificationSettingsQuery(userExternalId);
-            var result = await _sender.Send(query, cancellationToken);
-
-            if (!result.IsSuccess)
-            {
-                _logger.LogWarning(
-                    "GetUserNotificationSettingsAsync failed for {UserExternalId}. Status: {Status}, Errors: {Errors}, ValidationErrors: {ValidationErrors}",
-                    userExternalId,
-                    result.Status,
-                    string.Join(", ", result.Errors),
-                    string.Join(", ", result.ValidationErrors.Select(e => e.ErrorMessage))
-                );
-                // Propagate the Result
-                return Result<UserNotificationSettingsDto>.NotFound(result.Errors.ToArray());
-            }
-
-            var settings = result.Value;
-
-            return Result<UserNotificationSettingsDto>.Success(new UserNotificationSettingsDto(
-                settings.UserExternalId,
-                settings.DeviceToken,
-                settings.PhoneNumber,
-                settings.Email,
-                settings.PushEnabled,
-                settings.SmsEnabled,
-                settings.EmailEnabled
-            ));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Exception in GetUserNotificationSettingsAsync for {UserExternalId}", userExternalId);
-            return Result<UserNotificationSettingsDto>.Error(ex.Message);
-        }
-    }
-
-    public async Task<Dictionary<string, UserNotificationSettingsDto>> GetUserNotificationSettingsBatchAsync(
-        IEnumerable<string> userExternalIds,
-        CancellationToken cancellationToken = default)
-    {
-        var result = new Dictionary<string, UserNotificationSettingsDto>();
-
-        // TODO: Optimize with a batch query in the future
-        // For now, execute multiple queries in parallel
-        var tasks = userExternalIds.Select(async userId =>
-        {
-            var settings = await GetUserNotificationSettingsAsync(userId, cancellationToken);
-            return (userId, settings);
-        });
-
-        var results = await Task.WhenAll(tasks);
-
-        foreach (var (userId, settings) in results)
-        {
-            if (settings != null)
-            {
-                result[userId] = settings;
-            }
-        }
-
-        return result;
     }
 
     public async Task<string> CreateOrUpdateGuestUserAsync(

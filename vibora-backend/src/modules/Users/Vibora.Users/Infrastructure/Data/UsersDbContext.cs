@@ -6,7 +6,6 @@ namespace Vibora.Users.Infrastructure.Data;
 public sealed class UsersDbContext : DbContext
 {
     public DbSet<User> Users => Set<User>();
-    public DbSet<UserNotificationSettings> UserNotificationSettings => Set<UserNotificationSettings>();
 
     public UsersDbContext(DbContextOptions<UsersDbContext> options) : base(options)
     {
@@ -75,49 +74,6 @@ public sealed class UsersDbContext : DbContext
 
             // Ignore domain events (not persisted)
             entity.Ignore(u => u.DomainEvents);
-        });
-
-        modelBuilder.Entity<UserNotificationSettings>(entity =>
-        {
-            entity.ToTable("UserNotificationSettings");
-            
-            // UserExternalId is the PRIMARY KEY
-            entity.HasKey(s => s.UserExternalId);
-            
-            entity.Property(s => s.UserExternalId)
-                .IsRequired()
-                .HasMaxLength(255);
-
-            entity.Property(s => s.DeviceToken)
-                .HasMaxLength(500);
-
-            entity.Property(s => s.PhoneNumber)
-                .HasMaxLength(20);
-
-            entity.Property(s => s.Email)
-                .HasMaxLength(255);
-
-            entity.Property(s => s.PushEnabled)
-                .IsRequired()
-                .HasDefaultValue(true);
-
-            entity.Property(s => s.SmsEnabled)
-                .IsRequired()
-                .HasDefaultValue(false);
-
-            entity.Property(s => s.EmailEnabled)
-                .IsRequired()
-                .HasDefaultValue(false);
-
-            entity.Property(s => s.CreatedAt)
-                .IsRequired();
-
-            entity.Property(s => s.UpdatedAt)
-                .IsRequired();
-
-            // Note: UserExternalId is the PRIMARY KEY, so no additional index needed
-            // Ignore domain events (not persisted)
-            entity.Ignore(s => s.DomainEvents);
         });
     }
 }

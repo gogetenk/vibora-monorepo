@@ -34,6 +34,15 @@ public interface IGamesServiceClient
         string userName,
         string userSkillLevel,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all participant external IDs for a game
+    /// Returns list of authenticated user IDs (excludes host if requested)
+    /// </summary>
+    Task<List<string>> GetGameParticipantIdsAsync(
+        Guid gameId,
+        string? excludeUserId = null,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>

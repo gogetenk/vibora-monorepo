@@ -25,6 +25,8 @@ import type {
   UpdateUserProfileRequest,
   NotificationHistoryDto,
   GetNotificationsResponse,
+  NotificationPreferencesDto,
+  UpdateNotificationPreferencesRequest,
   ApiResponse,
   ApiErrorResponse,
 } from "./vibora-types"
@@ -411,6 +413,35 @@ export const notificationsApi = {
   async delete(notificationId: string): Promise<ApiResponse<void>> {
     return fetchVibora<void>(`/notifications/${notificationId}`, {
       method: "DELETE",
+    })
+  },
+
+  /**
+   * POST /notifications/device-tokens - Enregistre un token de device pour les notifications push
+   */
+  async registerDeviceToken(request: { deviceToken: string }): Promise<ApiResponse<void>> {
+    return fetchVibora<void>("/notifications/device-tokens", {
+      method: "POST",
+      body: JSON.stringify(request),
+    })
+  },
+
+  /**
+   * GET /notifications/preferences - Récupère les préférences de notifications
+   */
+  async getNotificationPreferences(): Promise<ApiResponse<NotificationPreferencesDto>> {
+    return fetchVibora<NotificationPreferencesDto>("/notifications/preferences")
+  },
+
+  /**
+   * PUT /notifications/preferences - Met à jour les préférences de notifications
+   */
+  async updateNotificationPreferences(
+    request: UpdateNotificationPreferencesRequest
+  ): Promise<ApiResponse<NotificationPreferencesDto>> {
+    return fetchVibora<NotificationPreferencesDto>("/notifications/preferences", {
+      method: "PUT",
+      body: JSON.stringify(request),
     })
   },
 }

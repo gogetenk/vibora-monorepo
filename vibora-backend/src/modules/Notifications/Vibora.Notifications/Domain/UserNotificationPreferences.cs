@@ -1,13 +1,13 @@
 using Ardalis.Result;
 using Vibora.Shared.Domain;
 
-namespace Vibora.Users.Domain;
+namespace Vibora.Notifications.Domain;
 
 /// <summary>
-/// Stores user's notification preferences and contact information
-/// Owned by User - one-to-one relationship
+/// User notification preferences and contact information
+/// Manages which notification channels are enabled and stores contact details
 /// </summary>
-public sealed class UserNotificationSettings : AggregateRoot
+public sealed class UserNotificationPreferences : AggregateRoot
 {
     public string UserExternalId { get; private set; } = string.Empty;
 
@@ -25,14 +25,27 @@ public sealed class UserNotificationSettings : AggregateRoot
     public DateTime UpdatedAt { get; private set; }
 
     // EF Core constructor
-    private UserNotificationSettings() { }
+    private UserNotificationPreferences() { }
 
     /// <summary>
-    /// Create default notification settings for a new user
+    /// Create default notification preferences for a user
+    /// Push enabled by default, SMS and Email disabled
     /// </summary>
-    public static UserNotificationSettings CreateDefault(string userExternalId, string? email = null)
+    public static UserNotificationPreferences CreateDefault(string userExternalId, string? email = null)
     {
-        return new UserNotificationSettings
+        var errors = new List<ValidationError>();
+
+        if (string.IsNullOrWhiteSpace(userExternalId))
+        {
+            errors.Add(new ValidationError(nameof(userExternalId), "UserExternalId is required"));
+        }
+
+        if (errors.Any())
+        {
+            throw new ArgumentException("Invalid parameters for creating notification preferences");
+        }
+
+        return new UserNotificationPreferences
         {
             UserExternalId = userExternalId,
             Email = email,
@@ -145,13 +158,13 @@ public sealed class UserNotificationSettings : AggregateRoot
     /// <summary>
     /// Check if a specific channel is enabled and has contact info
     /// </summary>
-    public bool CanReceiveNotification(string channel)
+    public bool CanReceiveNotification(NotificationChannel channel)
     {
-        return channel.ToLower() switch
+        return channel switch
         {
-            "push" => PushEnabled && !string.IsNullOrWhiteSpace(DeviceToken),
-            "sms" => SmsEnabled && !string.IsNullOrWhiteSpace(PhoneNumber),
-            "email" => EmailEnabled && !string.IsNullOrWhiteSpace(Email),
+            NotificationChannel.Push => PushEnabled && !string.IsNullOrWhiteSpace(DeviceToken),
+            NotificationChannel.Sms => SmsEnabled && !string.IsNullOrWhiteSpace(PhoneNumber),
+            NotificationChannel.Email => EmailEnabled && !string.IsNullOrWhiteSpace(Email),
             _ => false
         };
     }
@@ -159,13 +172,13 @@ public sealed class UserNotificationSettings : AggregateRoot
     /// <summary>
     /// Get the recipient identifier for a specific channel
     /// </summary>
-    public string? GetRecipient(string channel)
+    public string? GetRecipient(NotificationChannel channel)
     {
-        return channel.ToLower() switch
+        return channel switch
         {
-            "push" => DeviceToken,
-            "sms" => PhoneNumber,
-            "email" => Email,
+            NotificationChannel.Push => DeviceToken,
+            NotificationChannel.Sms => PhoneNumber,
+            NotificationChannel.Email => Email,
             _ => null
         };
     }

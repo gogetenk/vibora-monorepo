@@ -2,6 +2,7 @@ using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Vibora.Games.Contracts.Events;
+using Vibora.Games.Contracts.Services;
 using Vibora.Notifications.Application.Commands.SendNotification;
 using Vibora.Notifications.Application.Services;
 using Vibora.Notifications.Domain;
@@ -11,24 +12,27 @@ namespace Vibora.Notifications.Application.EventHandlers;
 
 /// <summary>
 /// Consumes PlayerJoinedEvent from Games module
-/// Sends notification to the host when a registered player joins their game
+/// Sends notifications to the host and all existing participants when a registered player joins
 /// </summary>
-public sealed class PlayerJoinedEventConsumer : IConsumer<PlayerJoinedEvent>
+internal sealed class PlayerJoinedEventConsumer : IConsumer<PlayerJoinedEvent>
 {
     private readonly ISender _sender;
     private readonly NotificationTemplateService _templateService;
     private readonly UserPreferencesService _userPreferencesService;
+    private readonly IGamesServiceClient _gamesServiceClient;
     private readonly ILogger<PlayerJoinedEventConsumer> _logger;
 
     public PlayerJoinedEventConsumer(
         ISender sender,
         NotificationTemplateService templateService,
         UserPreferencesService userPreferencesService,
+        IGamesServiceClient gamesServiceClient,
         ILogger<PlayerJoinedEventConsumer> logger)
     {
         _sender = sender;
         _templateService = templateService;
         _userPreferencesService = userPreferencesService;
+        _gamesServiceClient = gamesServiceClient;
         _logger = logger;
     }
 
@@ -40,42 +44,70 @@ public sealed class PlayerJoinedEventConsumer : IConsumer<PlayerJoinedEvent>
             "Processing PlayerJoinedEvent: {UserName} joined game {GameId}",
             @event.UserName, @event.GameId);
 
-        // Build notification content for host
+        // Build notification content
         var content = _templateService.BuildPlayerJoinedContent(
             @event.UserName,
             @event.Location,
             @event.GameDateTime);
 
-        // Fetch host's device token from Users module (supports monolith & microservices)
+        // Notify host
+        await NotifyUserAsync(@event.HostExternalId, content, context.CancellationToken);
+
+        // Notify all existing participants (except the user who just joined)
+        var participantIds = await _gamesServiceClient.GetGameParticipantIdsAsync(
+            @event.GameId,
+            excludeUserId: @event.UserExternalId,
+            cancellationToken: context.CancellationToken);
+
+        foreach (var participantId in participantIds)
+        {
+            await NotifyUserAsync(participantId, content, context.CancellationToken);
+        }
+
+        _logger.LogInformation(
+            "PlayerJoined notifications sent to host and {ParticipantCount} existing participants",
+            participantIds.Count);
+    }
+
+    private async Task NotifyUserAsync(
+        string userExternalId,
+        NotificationContent content,
+        CancellationToken cancellationToken)
+    {
+        // Fetch user's device token from Users module (supports monolith & microservices)
         var deviceToken = await _userPreferencesService.GetUserDeviceTokenAsync(
-            @event.HostExternalId, 
-            context.CancellationToken);
+            userExternalId,
+            cancellationToken);
 
         if (string.IsNullOrWhiteSpace(deviceToken))
         {
             _logger.LogWarning(
-                "Skipping PlayerJoined notification for host {HostExternalId} - no device token or push disabled",
-                @event.HostExternalId);
+                "Skipping PlayerJoined notification for user {UserExternalId} - no device token or push disabled",
+                userExternalId);
             return;
         }
 
-        // Notify host
+        // Send notification
         var command = new SendNotificationCommand(
-            @event.HostExternalId,
+            userExternalId,
             NotificationType.PlayerJoined,
             NotificationChannel.Push,
             deviceToken,
             content);
 
-        var result = await _sender.Send(command, context.CancellationToken);
+        var result = await _sender.Send(command, cancellationToken);
 
         if (result.IsSuccess)
         {
-            _logger.LogInformation("PlayerJoined notification sent to host successfully");
+            _logger.LogInformation(
+                "PlayerJoined notification sent successfully to user {UserExternalId}",
+                userExternalId);
         }
         else
         {
-            _logger.LogError("Failed to send PlayerJoined notification: {Errors}",
+            _logger.LogError(
+                "Failed to send PlayerJoined notification to user {UserExternalId}: {Errors}",
+                userExternalId,
                 string.Join(", ", result.Errors));
         }
     }

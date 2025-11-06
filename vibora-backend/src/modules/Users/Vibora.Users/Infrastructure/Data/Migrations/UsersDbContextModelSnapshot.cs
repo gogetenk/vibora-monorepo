@@ -68,7 +68,6 @@ namespace Vibora.Users.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.Property<int>("SkillLevel")
-                        .HasMaxLength(50)
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -85,50 +84,6 @@ namespace Vibora.Users.Infrastructure.Data.Migrations
                         .HasFilter("\"PhoneNumber\" IS NOT NULL");
 
                     b.ToTable("Users", (string)null);
-                });
-
-            modelBuilder.Entity("Vibora.Users.Domain.UserNotificationSettings", b =>
-                {
-                    b.Property<string>("UserExternalId")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DeviceToken")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<bool>("EmailEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<bool>("PushEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("SmsEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("UserExternalId");
-
-                    b.ToTable("UserNotificationSettings", (string)null);
                 });
 #pragma warning restore 612, 618
         }

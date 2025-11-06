@@ -26,9 +26,8 @@ public class CreateGameIntegrationTests : IntegrationTestBaseImproved
             hostExternalId = host.ExternalId,
             dateTime = DateTime.UtcNow.AddDays(2),
             location = "Club de Padel Paris",
-            skillLevel = "Intermediate",
-            maxPlayers = 4,
-            notes = "Bring your own racket"
+            skillLevel = 5, // Intermediate = 5 (int, not string "Intermediate")
+            maxPlayers = 4
         };
 
         AuthenticateAs(host.ExternalId);

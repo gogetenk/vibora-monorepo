@@ -34,5 +34,10 @@ public enum NotificationType
     /// <summary>
     /// A new message has been posted in a game chat
     /// </summary>
-    NewChatMessage = 6
+    NewChatMessage = 6,
+
+    /// <summary>
+    /// A game has been completed
+    /// </summary>
+    GameCompleted = 7
 }

@@ -5,8 +5,9 @@ namespace Vibora.Games.Domain;
 
 /// <summary>
 /// Repository interface for Game aggregate root
+/// Exposed publicly to support Hangfire job scheduling via GameReminderService
 /// </summary>
-internal interface IGameRepository
+public interface IGameRepository
 {
     /// <summary>
     /// Gets a game by its ID, returning Result.NotFound if not found
@@ -83,4 +84,23 @@ internal interface IGameRepository
     /// Removes a guest participant from the repository
     /// </summary>
     void RemoveGuestParticipant(GuestParticipant guestParticipant);
+
+    /// <summary>
+    /// Gets all user external IDs participating in a specific game
+    /// Excludes the specified user if provided (e.g., for excluding the joining player)
+    /// Only returns authenticated users, not guests
+    /// </summary>
+    Task<List<string>> GetGameParticipantUserIdsAsync(
+        Guid gameId,
+        string? excludeUserExternalId = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all games scheduled to start within a specific time window
+    /// Used by GameReminderService to find upcoming games for notifications
+    /// </summary>
+    Task<List<Game>> GetGamesStartingInTimeWindowAsync(
+        DateTime fromTime,
+        DateTime toTime,
+        CancellationToken cancellationToken = default);
 }

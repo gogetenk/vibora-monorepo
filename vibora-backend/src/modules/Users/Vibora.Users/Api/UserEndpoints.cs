@@ -303,7 +303,7 @@ internal static class UserEndpoints
             request.Email);
 
         var result = await sender.Send(command);
-        
+
         // Return 422 for validation errors (e.g., missing contact info)
         if (result.Status == ResultStatus.Invalid)
         {
@@ -312,9 +312,10 @@ internal static class UserEndpoints
                 errors = result.ValidationErrors.Select(e => e.ErrorMessage).ToList()
             });
         }
-        
+
         return result.ToMinimalApiResult();
     }
+
 }
 
 // Request DTOs
