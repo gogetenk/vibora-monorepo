@@ -1,2 +1,0 @@
-0000000000000000000000000000000000000000 02efa70feaef119309ae6747c86c28354c396c1c Yannis TOCREAU <gogetenk@hotmail.com> 1759669153 +0200	branch: Created from HEAD
-02efa70feaef119309ae6747c86c28354c396c1c 6568f29486488bcdaaf568d82e38ff7a28a10f39 Yannis TOCREAU <gogetenk@hotmail.com> 1759670381 +0200	commit: feat: implement GET /games endpoint with filters and pagination

@@ -1,7 +1,0 @@
-0000000000000000000000000000000000000000 24a14d38b46d0dc03563c7980df5b9bfd8875a5c Yannis <yannis.tocreau@consulting-for.edenred.com> 1754400559 +0200	branch: Created from HEAD
-24a14d38b46d0dc03563c7980df5b9bfd8875a5c 013399e9714c5c24b0570f733cf265f4df4a217f Yannis <yannis.tocreau@consulting-for.edenred.com> 1754400658 +0200	commit: del
-013399e9714c5c24b0570f733cf265f4df4a217f 93d314f6ced7a8fa3b3c72618b9a07b4f9df2d58 Yannis <yannis.tocreau@consulting-for.edenred.com> 1761385327 +0200	commit: feat: plugged backend to create game as guest
-93d314f6ced7a8fa3b3c72618b9a07b4f9df2d58 d0f9af42eaa7b138e19725d6c2c2ce3a981ecbeb Yannis <yannis.tocreau@consulting-for.edenred.com> 1761512629 +0100	commit: feat: finished game flow and profile page
-d0f9af42eaa7b138e19725d6c2c2ce3a981ecbeb 2b59d79e958b7344a307a34acde20030a4351b11 Yannis <yannis.tocreau@consulting-for.edenred.com> 1761955875 +0100	commit: feat: added offline mode (init)
-2b59d79e958b7344a307a34acde20030a4351b11 99f38a8ad3eb2ae70ff2b360fe0434a13b8c1c2e Yannis <yannis.tocreau@consulting-for.edenred.com> 1761990528 +0100	commit: feat: offline mode on the full app
-99f38a8ad3eb2ae70ff2b360fe0434a13b8c1c2e 024f13671fd8c8bca64eb14fb871227e67a73dce Yannis <yannis.tocreau@consulting-for.edenred.com> 1761991727 +0100	commit: fix: bugs

@@ -1,5 +1,0 @@
-0000000000000000000000000000000000000000 aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 Yannis TOCREAU <gogetenk@hotmail.com> 1759687140 +0200	branch: Created from HEAD
-aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 e726589b29ea757924e81ed7a5054b3c299c7a2a Yannis TOCREAU <gogetenk@hotmail.com> 1759687921 +0200	commit: doc
-e726589b29ea757924e81ed7a5054b3c299c7a2a 416a7a01a0a833200a702c0904911a79d42510b4 Yannis TOCREAU <gogetenk@hotmail.com> 1759731249 +0200	commit: feat(games): Implement Share Game Phase 1 with complete event architecture
-416a7a01a0a833200a702c0904911a79d42510b4 a6b20154ed59c3f1e5da152edc479681d13b49e3 Yannis TOCREAU <gogetenk@hotmail.com> 1759732980 +0200	commit: feat: added joingaim as guest feature
-a6b20154ed59c3f1e5da152edc479681d13b49e3 b7bc784d3290d361ec4c359c18edf03a89a56769 Yannis TOCREAU <gogetenk@hotmail.com> 1759779778 +0200	commit: feat: implemented

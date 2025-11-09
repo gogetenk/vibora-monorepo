@@ -1,3 +1,0 @@
-0000000000000000000000000000000000000000 4249f014e6c2bdc40d89dcd3bddb8211cda96f79 Yannis TOCREAU <gogetenk@hotmail.com> 1759686213 +0200	branch: Created from HEAD
-4249f014e6c2bdc40d89dcd3bddb8211cda96f79 cb295128969ad63ba5ad97c2d9fda273a5944ba1 Yannis TOCREAU <gogetenk@hotmail.com> 1759686925 +0200	commit: feat(games): Implement Cancel Game with complete event architecture
-cb295128969ad63ba5ad97c2d9fda273a5944ba1 aecc72c386c6a53eacb82d7f2acc44388fa1e3d7 Yannis TOCREAU <gogetenk@hotmail.com> 1759687049 +0200	commit: backlog

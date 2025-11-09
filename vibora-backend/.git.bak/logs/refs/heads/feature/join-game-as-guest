@@ -1,3 +1,0 @@
-0000000000000000000000000000000000000000 dc2bb754d9ac0aac8669936a8e27c71cdb18a746 Yannis TOCREAU <gogetenk@hotmail.com> 1760288772 +0200	branch: Created from HEAD
-dc2bb754d9ac0aac8669936a8e27c71cdb18a746 af90169323134fb432c3b604783d335fea1bbdc8 Yannis TOCREAU <gogetenk@hotmail.com> 1760337186 +0200	commit: feat(games): implement 'Join Game as Guest' feature (US #MVP-GM-007)
-af90169323134fb432c3b604783d335fea1bbdc8 6c1590283902fb2691257873bafc9153e1b14a37 Yannis TOCREAU <gogetenk@hotmail.com> 1760337329 +0200	commit: docs(backlog): mark 'Join Game as Guest' as completed

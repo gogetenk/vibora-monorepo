@@ -1,2 +1,0 @@
-0000000000000000000000000000000000000000 58d3e748b23f20aa872f613b87d9211f4df568a7 Yannis TOCREAU <gogetenk@hotmail.com> 1759671932 +0200	branch: Created from HEAD
-58d3e748b23f20aa872f613b87d9211f4df568a7 6d3b2cf9735dc56a5f1e4de83c64144be8d093ac Yannis TOCREAU <gogetenk@hotmail.com> 1759677803 +0200	commit: feat: implement POST /games/{id}/players to join game

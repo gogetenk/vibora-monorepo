@@ -1,3 +1,0 @@
-0000000000000000000000000000000000000000 4ce94099774575e42ba1ed09320a13cec8f8147e Yannis TOCREAU <gogetenk@hotmail.com> 1760769519 +0200	branch: Created from refs/remotes/origin/feature/phase-3b-auto-guest-reconciliation
-4ce94099774575e42ba1ed09320a13cec8f8147e e2bd4932c926842a81827b640ce9675787f5f3fb Yannis TOCREAU <gogetenk@hotmail.com> 1760770651 +0200	commit: update backlog
-e2bd4932c926842a81827b640ce9675787f5f3fb 710a2f00ea4d0973a6aa2c2074ad08c466666c8a Yannis TOCREAU <gogetenk@hotmail.com> 1760783048 +0200	pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward

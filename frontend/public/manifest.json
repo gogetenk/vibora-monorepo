@@ -1,0 +1,47 @@
+{
+  "name": "Vibora - Padel Matchmaking",
+  "short_name": "Vibora",
+  "description": "Trouvez et rejoignez facilement des parties de Padel près de chez vous",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["sports", "social"],
+  "shortcuts": [
+    {
+      "name": "Créer une partie",
+      "short_name": "Créer",
+      "description": "Créer une nouvelle partie de padel",
+      "url": "/create-game",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mes parties",
+      "short_name": "Mes parties",
+      "description": "Voir mes parties de padel",
+      "url": "/my-games",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
