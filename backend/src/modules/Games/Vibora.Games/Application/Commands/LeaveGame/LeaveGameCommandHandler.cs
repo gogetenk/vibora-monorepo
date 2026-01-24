@@ -25,9 +25,10 @@ internal sealed class LeaveGameCommandHandler : IRequestHandler<LeaveGameCommand
     {
         var result = await ValidateRequest(request)
             .BindAsync(cmd => _gameRepository.GetByIdWithParticipationsAsync(cmd.GameId, cancellationToken))
+            .BindAsync(game => ValidateHostNotLeaving(game, request.UserExternalId))
             .BindAsync(ValidateGameStatus)
             .BindAsync(game => game.RemoveParticipant(request.UserExternalId).Map(_ => game))
-            .TapAsync(async game => 
+            .TapAsync(async game =>
             {
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 return Result.Success();
@@ -52,6 +53,14 @@ internal sealed class LeaveGameCommandHandler : IRequestHandler<LeaveGameCommand
         return errors.Any()
             ? Result<LeaveGameCommand>.Invalid(errors)
             : Result.Success(request);
+    }
+
+    private static Result<Game> ValidateHostNotLeaving(Game game, string userExternalId)
+    {
+        if (game.IsHost(userExternalId))
+            return Result<Game>.Invalid(new ValidationError("Host cannot leave the game"));
+
+        return Result.Success(game);
     }
 
     private Result<Game> ValidateGameStatus(Game game)

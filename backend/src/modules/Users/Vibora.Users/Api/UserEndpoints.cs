@@ -229,7 +229,7 @@ internal static class UserEndpoints
         // Parse SkillLevel (1-10 scale)
         if (!int.TryParse(skillLevelStr, out var skillLevel))
         {
-            return Results.BadRequest(new { error = "Invalid SkillLevel. Must be a number between 1 and 10." });
+            return Results.UnprocessableEntity(new { error = "Invalid SkillLevel. Must be a number between 1 and 10." });
         }
 
         // Update profile (validation done in command handler)

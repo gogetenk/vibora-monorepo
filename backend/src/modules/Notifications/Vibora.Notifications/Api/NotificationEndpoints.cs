@@ -26,7 +26,7 @@ internal static class NotificationEndpoints
             .WithTags("Notifications")
             .RequireAuthorization();
 
-        notificationsGroup.MapGet("", GetNotificationHistory)
+        notificationsGroup.MapGet("/history", GetNotificationHistory)
             .WithName("GetNotificationHistory")
             .Produces<List<NotificationHistoryDto>>(StatusCodes.Status200OK);
 

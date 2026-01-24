@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using MediatR;
+using Vibora.Shared.Extensions;
 using Vibora.Users.Domain;
 
 namespace Vibora.Users.Application.Queries.GetCurrentUser;
@@ -32,7 +33,7 @@ internal sealed class GetCurrentUserQueryHandler
         return Result<GetCurrentUserResult>.Success(new GetCurrentUserResult(
             user.ExternalId,
             user.Name,
-            user.SkillLevel.ToString(),
+            user.SkillLevel.ToDisplayString(),
             user.Bio
         ));
     }

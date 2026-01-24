@@ -2,6 +2,7 @@ using Ardalis.Result;
 using MediatR;
 using Vibora.Games.Contracts.Services;
 using Vibora.Users.Application.DTOs;
+using Vibora.Shared.Extensions;
 using Vibora.Users.Domain;
 
 namespace Vibora.Users.Application.Queries.GetUserPublicProfile;
@@ -54,7 +55,7 @@ internal sealed class GetUserPublicProfileQueryHandler
         var dto = new UserPublicProfileDto(
             user.FirstName,
             lastNameInitial,
-            user.SkillLevel.ToString(),
+            user.SkillLevel.ToDisplayString(),
             user.Bio,
             user.PhotoUrl,
             gamesCount,

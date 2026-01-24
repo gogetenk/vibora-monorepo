@@ -77,7 +77,7 @@ public class CreateGameCommandHandlerTests
         var hostParticipant = result.Value.Participants.First();
         hostParticipant.ExternalId.Should().Be(hostMetadata.ExternalId);
         hostParticipant.Name.Should().Be(hostMetadata.Name);
-        hostParticipant.SkillLevel.Should().Be(hostMetadata.SkillLevel.ToString());
+        hostParticipant.SkillLevel.Should().Be(hostMetadata.SkillLevel.ToDisplayString());
     }
 
     [Fact]
@@ -266,7 +266,7 @@ public class CreateGameCommandHandlerTests
         var hostParticipant = participants.First();
         hostParticipant.ExternalId.Should().Be(hostMetadata.ExternalId);
         hostParticipant.Name.Should().Be(hostMetadata.Name);
-        hostParticipant.SkillLevel.Should().Be(hostMetadata.SkillLevel.ToString());
+        hostParticipant.SkillLevel.Should().Be(hostMetadata.SkillLevel.ToDisplayString());
     }
 
     [Fact]

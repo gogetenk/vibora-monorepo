@@ -80,7 +80,7 @@ internal class SearchGamesQueryHandler : IRequestHandler<SearchGamesQuery, Resul
             .OrderBy(x => x.Distance ?? double.MaxValue)
             .ThenBy(x => Math.Abs((x.Game.DateTime - when).TotalHours))
             .Take(3)
-            .Select(x => MapToDto(x.Game, 4, x.Distance))
+            .Select(x => MapToDto(x.Game, 3, x.Distance))
             .ToList();
 
         var partialMatches = scoredGames
@@ -158,7 +158,7 @@ internal class SearchGamesQueryHandler : IRequestHandler<SearchGamesQuery, Resul
         DateTime when,
         CancellationToken cancellationToken)
     {
-        var timeWindow = TimeSpan.FromHours(4); // ±4h timebox
+        var timeWindow = TimeSpan.FromHours(6); // ±6h timebox
 
         // Step 1: Get candidates with GPS coordinates and time filter (SQL-side)
         var candidatesWithGps = await _context.Games
@@ -227,12 +227,12 @@ internal class SearchGamesQueryHandler : IRequestHandler<SearchGamesQuery, Resul
         DateTime when,
         CancellationToken cancellationToken)
     {
-        var timeWindow = TimeSpan.FromHours(4);
+        var timeWindow = TimeSpan.FromHours(6);
 
         return await _context.Games
             .Where(g => g.Status == GameStatus.Open)
             .Where(g => g.DateTime >= when - timeWindow && g.DateTime <= when + timeWindow)
-            .Where(g => g.Location.Contains(request.Where!))
+            // Don't filter by location here - scoring will handle location relevance for partial matches
             .OrderBy(g => g.DateTime)
             .Take(MaxCandidates)
             .Select(g => new CandidateGame
@@ -291,21 +291,22 @@ internal class SearchGamesQueryHandler : IRequestHandler<SearchGamesQuery, Resul
     private static int CalculateMatchScore(Game game, SearchGamesQuery criteria, DateTime when, double? distance)
     {
         int score = 0;
+        int criteriaMatched = 0;
 
-        // Time criterion: ±4 hours
-        if (Math.Abs((game.DateTime - when).TotalHours) <= 4)
-            score++;
+        // Time criterion: ±6 hours
+        if (Math.Abs((game.DateTime - when).TotalHours) <= 6)
+            criteriaMatched++;
 
         // Location criterion
         if (distance.HasValue)
         {
             if (distance.Value <= criteria.RadiusKm)
-                score++;
+                criteriaMatched++;
         }
         else if (!string.IsNullOrWhiteSpace(criteria.Where))
         {
             if (game.Location.Contains(criteria.Where, StringComparison.OrdinalIgnoreCase))
-                score++;
+                criteriaMatched++;
         }
 
         // Level criterion: ±2 levels
@@ -313,16 +314,25 @@ internal class SearchGamesQueryHandler : IRequestHandler<SearchGamesQuery, Resul
         {
             var gameLevel = int.TryParse(game.SkillLevel, out var gl) ? gl : 5;
             if (Math.Abs(gameLevel - criteria.Level.Value) <= 2)
-                score++;
+                criteriaMatched++;
         }
         else
         {
-            score++; // No level criteria = match
+            criteriaMatched++; // No level criteria = match
         }
 
         // GPS bonus
         if (game.Latitude.HasValue && game.Longitude.HasValue)
             score++;
+
+        // Score is based on number of criteria matched (1-3 for partial matches)
+        // Perfect matches are handled separately with fixed score of 3
+        score += criteriaMatched;
+
+        // For partial matches (not perfect), cap score at 2 max
+        // Perfect matches will get score 3 by MapToDto, so we don't need to cap those
+        if (!IsPerfectMatch(game, criteria, when, distance) && score > 2)
+            score = 2;
 
         return score;
     }

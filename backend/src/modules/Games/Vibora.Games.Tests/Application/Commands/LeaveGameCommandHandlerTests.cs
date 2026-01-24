@@ -125,30 +125,26 @@ public class LeaveGameCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenHostLeaves_ShouldSucceed()
+    public async Task Handle_WhenHostLeaves_ShouldReturnInvalid()
     {
         // Arrange
         var gameId = Guid.NewGuid();
         var game = CreateTestGame(gameId);
-        
+
         _gameRepositoryMock.Setup(r => r.GetByIdWithParticipationsAsync(gameId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(game));
-        
-        _unitOfWorkMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
 
-        var command = new LeaveGameCommand(gameId, "auth0|host"); // Host can now leave
-
-        var initialPlayerCount = game.CurrentPlayers;
+        var command = new LeaveGameCommand(gameId, "auth0|host"); // Host cannot leave
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        game.CurrentPlayers.Should().Be(initialPlayerCount - 1);
-        
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        result.IsSuccess.Should().BeFalse();
+        result.Status.Should().Be(ResultStatus.Invalid);
+        result.ValidationErrors.Should().Contain(e => e.ErrorMessage.Contains("Host cannot leave"));
+
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

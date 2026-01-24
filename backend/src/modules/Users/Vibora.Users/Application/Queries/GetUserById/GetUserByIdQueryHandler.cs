@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using MediatR;
+using Vibora.Shared.Extensions;
 using Vibora.Users.Domain;
 
 namespace Vibora.Users.Application.Queries.GetUserById;
@@ -30,7 +31,7 @@ internal sealed class GetUserByIdQueryHandler
         return Result<GetUserByIdResult>.Success(new GetUserByIdResult(
             user.ExternalId,
             user.Name,
-            user.SkillLevel.ToString(),
+            user.SkillLevel.ToDisplayString(),
             user.Bio
         ));
     }

@@ -23,8 +23,9 @@ namespace Vibora.Integration.Tests.Infrastructure;
 public class ViboraWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private PostgreSqlContainer? _postgresContainer;
+    private bool _databaseCreated = false;
 
-    public string ConnectionString => _postgresContainer?.GetConnectionString() 
+    public string ConnectionString => _postgresContainer?.GetConnectionString()
         ?? throw new InvalidOperationException("PostgreSQL container not initialized");
 
     public async Task InitializeAsync()
@@ -46,21 +47,25 @@ public class ViboraWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     {
         // First, create the host
         var host = base.CreateHost(builder);
-        
-        // Create database schema after the host is created
-        using var scope = host.Services.CreateScope();
-        var gamesDb = scope.ServiceProvider.GetRequiredService<GamesDbContext>();
-        var usersDb = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-        var notificationsDb = scope.ServiceProvider.GetRequiredService<NotificationsDbContext>();
 
-        // Drop and recreate all tables (all DbContexts share the same database)
-        gamesDb.Database.ExecuteSqlRaw("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
+        // Create database schema ONLY ONCE per test run
+        // Between tests, we use DELETE queries (see IntegrationTestBase.DisposeAsync)
+        if (!_databaseCreated)
+        {
+            using var scope = host.Services.CreateScope();
+            var gamesDb = scope.ServiceProvider.GetRequiredService<GamesDbContext>();
+            var usersDb = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+            var notificationsDb = scope.ServiceProvider.GetRequiredService<NotificationsDbContext>();
 
-        // Create tables for each module
-        gamesDb.Database.ExecuteSqlRaw(gamesDb.Database.GenerateCreateScript());
-        usersDb.Database.ExecuteSqlRaw(usersDb.Database.GenerateCreateScript());
-        notificationsDb.Database.ExecuteSqlRaw(notificationsDb.Database.GenerateCreateScript());
-        
+            // Apply all migrations (creates database + PostGIS extension + tables + triggers + indexes)
+            // Order matters: Games first as it creates PostGIS extension
+            gamesDb.Database.Migrate();
+            usersDb.Database.Migrate();
+            notificationsDb.Database.Migrate();
+
+            _databaseCreated = true;
+        }
+
         return host;
     }
 
@@ -97,7 +102,8 @@ public class ViboraWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
                     ["Jwt:Secret"] = "test-secret-key-for-integration-tests-only-minimum-256-bits", // Same key as TestJwtGenerator
                     ["Jwt:Issuer"] = "https://test.supabase.co/auth/v1",
                     ["Logging:LogLevel:Default"] = "Warning",
-                    ["Logging:LogLevel:Microsoft.AspNetCore"] = "Warning"
+                    ["Logging:LogLevel:Microsoft.AspNetCore"] = "Warning",
+                    ["Hangfire:Enabled"] = "false" // Disable Hangfire in tests
                 }
             });
         });

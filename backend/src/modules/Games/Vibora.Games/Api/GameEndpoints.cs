@@ -1,3 +1,4 @@
+using Ardalis.Result;
 using Ardalis.Result.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -22,6 +23,7 @@ using Vibora.Games.Application.Queries.GetShareByToken;
 using Vibora.Games.Application.Queries.GetShareMetadata;
 using Vibora.Games.Application.Queries.GetUserGamesCount;
 using Vibora.Games.Application.Queries.SearchGames;
+using Vibora.Shared.Extensions;
 using Vibora.Shared.Infrastructure.Caching;
 using HttpResult = Microsoft.AspNetCore.Http.IResult;
 
@@ -316,9 +318,19 @@ internal static class GameEndpoints
         var command = new LeaveGameCommand(id, externalId);
         var result = await sender.Send(command);
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : result.ToMinimalApiResult();
+        if (result.IsSuccess)
+            return Results.Ok(result.Value);
+
+        // Return 422 for validation errors, other error codes for other issues
+        if (result.Status == ResultStatus.Invalid)
+        {
+            return Results.UnprocessableEntity(new
+            {
+                errors = result.ValidationErrors.Select(e => e.ErrorMessage).ToList()
+            });
+        }
+
+        return result.ToMinimalApiResult();
     }
 
     // POST /games - Create new game
@@ -332,7 +344,7 @@ internal static class GameEndpoints
             return Results.Unauthorized();
 
         // Convert numeric skill level to string
-        var skillLevelStr = request.SkillLevel?.ToString() ?? "5"; // Default to level 5
+        var skillLevelStr = (request.SkillLevel ?? 5).ToDisplayString();
 
         var command = new CreateGameCommand(
             externalId, // User ExternalId from JWT

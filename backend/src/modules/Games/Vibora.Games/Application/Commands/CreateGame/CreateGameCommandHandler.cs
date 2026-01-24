@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using Vibora.Games.Application;
 using Vibora.Games.Domain;
 using Vibora.Shared.Infrastructure.Caching;
+using Vibora.Shared.Extensions;
 using Vibora.Users.Contracts.Services;
 
 namespace Vibora.Games.Application.Commands.CreateGame;
@@ -51,7 +52,7 @@ internal sealed class CreateGameCommandHandler
         var createResult = Game.Create(
             request.HostExternalId,
             hostMetadata.Name,
-            hostMetadata.SkillLevel.ToString(), // Convert int (1-10) to string for now
+            hostMetadata.SkillLevel.ToDisplayString(),
             request.DateTime,
             request.Location,
             request.SkillLevel,

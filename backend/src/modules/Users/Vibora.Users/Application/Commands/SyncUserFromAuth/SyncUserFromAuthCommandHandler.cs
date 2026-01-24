@@ -1,6 +1,7 @@
 using Ardalis.Result;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Vibora.Shared.Extensions;
 using Vibora.Games.Contracts.Services;
 using Vibora.Users.Application;
 using Vibora.Users.Domain;
@@ -146,7 +147,7 @@ internal sealed class SyncUserFromAuthCommandHandler
                 guestIds,
                 user.ExternalId,
                 user.Name,
-                user.SkillLevel.ToString(),
+                user.SkillLevel.ToDisplayString(),
                 cancellationToken);
 
             if (convertedCount > 0)

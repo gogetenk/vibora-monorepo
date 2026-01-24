@@ -71,16 +71,20 @@ try
     });
 
     // Configure Hangfire - Background jobs for game reminders
-    // Note: In Aspire, connection string is available under the database name "viboradb"
-    var hangfireConnectionString = builder.Configuration.GetConnectionString("viboradb");
-    builder.Services.AddHangfire(config =>
+    // Can be disabled in tests with Hangfire:Enabled = false
+    var hangfireEnabled = builder.Configuration.GetValue<bool>("Hangfire:Enabled", defaultValue: true);
+    if (hangfireEnabled)
     {
-        config.UsePostgreSqlStorage(hangfireConnectionString);
-        config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170);
-        config.UseSimpleAssemblyNameTypeSerializer();
-        config.UseRecommendedSerializerSettings();
-    });
-    builder.Services.AddHangfireServer();
+        var hangfireConnectionString = builder.Configuration.GetConnectionString("viboradb");
+        builder.Services.AddHangfire(config =>
+        {
+            config.UsePostgreSqlStorage(hangfireConnectionString);
+            config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170);
+            config.UseSimpleAssemblyNameTypeSerializer();
+            config.UseRecommendedSerializerSettings();
+        });
+        builder.Services.AddHangfireServer();
+    }
 
     // Global Exception Handler
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -205,20 +209,24 @@ try
     // Output Cache - MUST be after Authentication to access User claims
     app.UseOutputCache();
 
-    // Configure Hangfire Dashboard
-    app.UseHangfireDashboard("/hangfire");
+    // Configure Hangfire Dashboard (only if enabled)
+    var isHangfireEnabled = app.Configuration.GetValue<bool>("Hangfire:Enabled", defaultValue: true);
+    if (isHangfireEnabled)
+    {
+        app.UseHangfireDashboard("/hangfire");
+
+        // Register recurring Hangfire jobs - game reminders every 5 minutes
+        RecurringJob.AddOrUpdate<GameReminderService>(
+            "game-reminders-2h",
+            service => service.PublishGameRemindersAsync(),
+            "*/5 * * * *");
+    }
 
     // Map Module Endpoints (Ardalis pattern)
     app.MapUsersEndpoints();
     app.MapGamesEndpoints();
     app.MapNotificationsEndpoints();
     // app.MapCommunicationEndpoints();
-
-    // Register recurring Hangfire jobs - game reminders every 5 minutes
-    RecurringJob.AddOrUpdate<GameReminderService>(
-        "game-reminders-2h",
-        service => service.PublishGameRemindersAsync(),
-        "*/5 * * * *");
 
     await app.RunAsync();
 

@@ -63,7 +63,12 @@
       "mcp__playwright__browser_evaluate",
       "Bash(docker exec:*)",
       "Bash(npm run generate-icons:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(docker ps:*)",
+      "Bash(ForEach-Object { docker rm -f $_ })",
+      "Bash(docker system prune:*)",
+      "Bash(Select-String -Pattern \"Passed|Failed|error|PostGIS|cache lookup\" -Context 0,2)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []

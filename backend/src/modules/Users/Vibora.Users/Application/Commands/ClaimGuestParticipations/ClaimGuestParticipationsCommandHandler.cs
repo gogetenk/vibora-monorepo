@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using MediatR;
+using Vibora.Shared.Extensions;
 using Vibora.Games.Contracts.Services;
 using Vibora.Users.Domain;
 
@@ -65,7 +66,7 @@ internal sealed class ClaimGuestParticipationsCommandHandler
             guestParticipantIds,
             user.ExternalId,
             user.Name,
-            user.SkillLevel.ToString(),
+            user.SkillLevel.ToDisplayString(),
             cancellationToken);
 
         // Build list of claimed games (for response)

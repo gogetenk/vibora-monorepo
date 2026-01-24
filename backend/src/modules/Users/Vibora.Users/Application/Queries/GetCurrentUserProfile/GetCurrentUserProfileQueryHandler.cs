@@ -1,6 +1,7 @@
 using Ardalis.Result;
 using MediatR;
 using Vibora.Games.Contracts.Services;
+using Vibora.Shared.Extensions;
 using Vibora.Users.Domain;
 
 namespace Vibora.Users.Application.Queries.GetCurrentUserProfile;
@@ -48,7 +49,7 @@ internal sealed class GetCurrentUserProfileQueryHandler
             ExternalId: user.ExternalId,
             FirstName: user.FirstName,
             LastName: user.LastName,
-            SkillLevel: user.SkillLevel.ToString(),
+            SkillLevel: user.SkillLevel.ToDisplayString(),
             Bio: user.Bio,
             PhotoUrl: user.PhotoUrl,
             GamesPlayedCount: gamesCount,
