@@ -250,12 +250,18 @@ try
         return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
     });
 
-    // Crash endpoint — NullReferenceException (demo scenario 1)
+    // Crash endpoint — controlled error response (demo scenario 1)
     app.MapGet("/api/sre/crash", () =>
     {
-        SentrySdk.Logger.LogError("Crash endpoint triggered — about to throw NullReferenceException");
+        SentrySdk.Logger.LogWarning("Crash endpoint triggered — returning simulated error response");
         string? value = null;
-        return Results.Ok(value!.Length); // NullReferenceException
+        if (value is null)
+        {
+            return Results.Json(
+                new { error = "Simulated crash: value was null", timestamp = DateTime.UtcNow },
+                statusCode: 500);
+        }
+        return Results.Ok(value.Length);
     });
 
     // Silent bug endpoint — wrong calculation with warning log (demo scenario 2)
@@ -273,7 +279,7 @@ try
     });
 
     // User search endpoint — performance degradation with retry storm (demo scenario 3)
-    app.MapGet("/api/sre/users/search", (string? query) =>
+    app.MapGet("/api/sre/users/search", async (string? query) =>
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var retryCount = 0;
@@ -283,17 +289,17 @@ try
         {
             try
             {
-                // Simulate unstable downstream service call
-                Thread.Sleep(1200 + retryCount * 800);
+                // Simulate downstream service call (non-blocking)
+                await Task.Delay(200 + retryCount * 100);
 
-                // 70% chance of failure on each attempt
-                if (Random.Shared.NextDouble() < 0.7)
+                // 30% chance of failure on each attempt (reduced from 70%)
+                if (Random.Shared.NextDouble() < 0.3)
                 {
                     retryCount++;
                     SentrySdk.Logger.LogWarning(
                         "User search: downstream timeout on attempt {0}/{1} for query '{2}' — retrying in {3}ms",
-                        retryCount, maxRetries, query ?? "null", retryCount * 500);
-                    Thread.Sleep(retryCount * 500); // Exponential-ish backoff
+                        retryCount, maxRetries, query ?? "null", retryCount * 100);
+                    await Task.Delay(retryCount * 100); // Non-blocking backoff
                     continue;
                 }
 
