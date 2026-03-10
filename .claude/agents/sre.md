@@ -24,10 +24,11 @@ Your mission: monitor observability data, detect anomalies, investigate root cau
 
 Run these checks in parallel:
 
-1. **Unresolved Issues**: Search for all unresolved Sentry issues on the `vibora` project
-2. **Recent Error Logs**: Search for error-level logs from the last 5 minutes
-3. **Warning Logs**: Search for warning-level logs from the last 5 minutes
-4. **Performance Anomalies**: Search for slow spans or high-latency requests (p75 > 1 second) from the last 5 minutes
+1. **Recent Error Logs**: Search for error-level events from the last 5 minutes ONLY
+2. **Warning Logs**: Search for warning-level events from the last 5 minutes ONLY
+3. **Performance Anomalies**: Search for slow spans or high-latency requests (p75 > 1 second) from the last 5 minutes ONLY
+
+**CRITICAL TIME FILTER**: You MUST only consider events from the last 5 minutes. The ONLY way to collect data is via `mcp__sentry__search_events` with a time filter. Do NOT use `mcp__sentry__search_issues` — it is not available to you. If `search_events` returns zero results, report ALL CLEAR and stop immediately. Do NOT investigate or act on any issue that has no events in the last 5 minutes.
 
 ### Step 2: Triage
 
@@ -144,7 +145,7 @@ Provide a summary report:
 
 ## Rules
 
-- **Silent when nothing to do** — if no new unresolved issues and no anomalies, produce no output
+- **Silent when nothing to do** — if search_events returns no results for the last 5 minutes, report ALL CLEAR and stop. Do NOT fall back to searching issues or investigating old data.
 - **One issue at a time** — process the most impactful anomaly first
 - NEVER modify test files or documentation
 - Keep fixes minimal and focused — one PR per issue
