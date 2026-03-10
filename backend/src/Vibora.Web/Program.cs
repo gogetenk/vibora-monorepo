@@ -250,12 +250,13 @@ try
         return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
     });
 
-    // Crash endpoint — NullReferenceException (demo scenario 1)
+    // Crash endpoint — simulates a critical failure (demo scenario 1)
     app.MapGet("/api/sre/crash", () =>
     {
-        SentrySdk.Logger.LogError("Crash endpoint triggered — about to throw NullReferenceException");
-        string? value = null;
-        return Results.Ok(value!.Length); // NullReferenceException
+        SentrySdk.Logger.LogError("Crash endpoint triggered — simulating critical failure");
+        return Results.Problem(
+            detail: "Simulated critical failure for SRE demo",
+            statusCode: StatusCodes.Status500InternalServerError);
     });
 
     // Silent bug endpoint — wrong calculation with warning log (demo scenario 2)
