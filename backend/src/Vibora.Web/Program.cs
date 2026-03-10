@@ -250,12 +250,18 @@ try
         return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
     });
 
-    // Crash endpoint — NullReferenceException (demo scenario 1)
+    // Crash endpoint — returns error instead of crashing (demo scenario 1)
     app.MapGet("/api/sre/crash", () =>
     {
-        SentrySdk.Logger.LogError("Crash endpoint triggered — about to throw NullReferenceException");
+        SentrySdk.Logger.LogWarning("Crash endpoint triggered — simulating degraded service");
         string? value = null;
-        return Results.Ok(value!.Length); // NullReferenceException
+        if (value is null)
+        {
+            return Results.Json(
+                new { error = "Service degraded", message = "Required data source returned null" },
+                statusCode: 503);
+        }
+        return Results.Ok(value.Length);
     });
 
     // Silent bug endpoint — wrong calculation with warning log (demo scenario 2)
