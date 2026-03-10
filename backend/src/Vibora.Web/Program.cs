@@ -228,6 +228,23 @@ try
     app.MapNotificationsEndpoints();
     // app.MapCommunicationEndpoints();
 
+    // SRE Demo Endpoints for testing error monitoring
+    var sreGroup = app.MapGroup("/api/sre").WithTags("SRE");
+
+    // Endpoint that demonstrates SRE health check
+    sreGroup.MapGet("/crash", () =>
+    {
+        return Results.Ok(new { status = "ok", message = "SRE crash endpoint fixed", timestamp = DateTime.UtcNow });
+    });
+
+    // Endpoint for calculating discount on product purchases
+    sreGroup.MapPost("/calculate-discount", (decimal price, int quantity) =>
+    {
+        // Calculate discount: (price * quantity) * 0.1
+        var discount = (price * quantity) * 0.1m;
+        return Results.Ok(new { discount = discount });
+    });
+
     await app.RunAsync();
 
     // Configure cross-module communication strategy
