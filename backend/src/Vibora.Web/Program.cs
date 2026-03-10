@@ -242,78 +242,81 @@ try
     app.MapNotificationsEndpoints();
     // app.MapCommunicationEndpoints();
 
-    // --- SRE Demo endpoints ---
-    // Healthy endpoint
-    app.MapGet("/api/sre/health-check", () =>
+    // --- SRE Demo endpoints (Development only) ---
+    if (app.Environment.IsDevelopment())
     {
-        SentrySdk.Logger.LogInfo("SRE health check OK at {0}", DateTime.UtcNow);
-        return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
-    });
-
-    // Crash endpoint — NullReferenceException (demo scenario 1)
-    app.MapGet("/api/sre/crash", () =>
-    {
-        SentrySdk.Logger.LogError("Crash endpoint triggered — about to throw NullReferenceException");
-        string? value = null;
-        return Results.Ok(value!.Length); // NullReferenceException
-    });
-
-    // Silent bug endpoint — wrong calculation with warning log (demo scenario 2)
-    app.MapGet("/api/sre/calculate-discount", (int price, int quantity) =>
-    {
-        // BUG: discount should be price * quantity * 0.1, but uses addition instead of multiplication
-        var discount = (price + quantity) * 0.1;
-        if (discount > price)
+        // Healthy endpoint
+        app.MapGet("/api/sre/health-check", () =>
         {
-            SentrySdk.Logger.LogWarning(
-                "Discount {0} exceeds price {1} for quantity {2} — potential calculation error",
-                discount, price, quantity);
-        }
-        return Results.Ok(new { price, quantity, discount, total = price * quantity - discount });
-    });
+            SentrySdk.Logger.LogInfo("SRE health check OK at {0}", DateTime.UtcNow);
+            return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+        });
 
-    // User search endpoint — performance degradation with retry storm (demo scenario 3)
-    app.MapGet("/api/sre/users/search", (string? query) =>
-    {
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var retryCount = 0;
-        const int maxRetries = 3;
-
-        while (retryCount < maxRetries)
+        // Crash endpoint — NullReferenceException (demo scenario 1)
+        app.MapGet("/api/sre/crash", () =>
         {
-            try
+            SentrySdk.Logger.LogError("Crash endpoint triggered — about to throw NullReferenceException");
+            string? value = null;
+            return Results.Ok(value!.Length); // NullReferenceException
+        });
+
+        // Silent bug endpoint — wrong calculation with warning log (demo scenario 2)
+        app.MapGet("/api/sre/calculate-discount", (int price, int quantity) =>
+        {
+            // BUG: discount should be price * quantity * 0.1, but uses addition instead of multiplication
+            var discount = (price + quantity) * 0.1;
+            if (discount > price)
             {
-                // Simulate unstable downstream service call
-                Thread.Sleep(1200 + retryCount * 800);
+                SentrySdk.Logger.LogWarning(
+                    "Discount {0} exceeds price {1} for quantity {2} — potential calculation error",
+                    discount, price, quantity);
+            }
+            return Results.Ok(new { price, quantity, discount, total = price * quantity - discount });
+        });
 
-                // 70% chance of failure on each attempt
-                if (Random.Shared.NextDouble() < 0.7)
+        // User search endpoint — performance degradation with retry storm (demo scenario 3)
+        app.MapGet("/api/sre/users/search", (string? query) =>
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var retryCount = 0;
+            const int maxRetries = 3;
+
+            while (retryCount < maxRetries)
+            {
+                try
                 {
-                    retryCount++;
-                    SentrySdk.Logger.LogWarning(
-                        "User search: downstream timeout on attempt {0}/{1} for query '{2}' — retrying in {3}ms",
-                        retryCount, maxRetries, query ?? "null", retryCount * 500);
-                    Thread.Sleep(retryCount * 500); // Exponential-ish backoff
-                    continue;
+                    // Simulate unstable downstream service call
+                    Thread.Sleep(1200 + retryCount * 800);
+
+                    // 70% chance of failure on each attempt
+                    if (Random.Shared.NextDouble() < 0.7)
+                    {
+                        retryCount++;
+                        SentrySdk.Logger.LogWarning(
+                            "User search: downstream timeout on attempt {0}/{1} for query '{2}' — retrying in {3}ms",
+                            retryCount, maxRetries, query ?? "null", retryCount * 500);
+                        Thread.Sleep(retryCount * 500); // Exponential-ish backoff
+                        continue;
+                    }
+
+                    stopwatch.Stop();
+                    SentrySdk.Logger.LogInfo("User search completed in {0}ms for query '{1}'", stopwatch.ElapsedMilliseconds, query ?? "null");
+                    return Results.Ok(new { query, results = new[] { "user1@test.com", "user2@test.com" }, responseTimeMs = stopwatch.ElapsedMilliseconds });
                 }
-
-                stopwatch.Stop();
-                SentrySdk.Logger.LogInfo("User search completed in {0}ms for query '{1}'", stopwatch.ElapsedMilliseconds, query ?? "null");
-                return Results.Ok(new { query, results = new[] { "user1@test.com", "user2@test.com" }, responseTimeMs = stopwatch.ElapsedMilliseconds });
+                catch (Exception ex)
+                {
+                    SentrySdk.Logger.LogError("User search unexpected error: {0}", ex.Message);
+                    throw;
+                }
             }
-            catch (Exception ex)
-            {
-                SentrySdk.Logger.LogError("User search unexpected error: {0}", ex.Message);
-                throw;
-            }
-        }
 
-        stopwatch.Stop();
-        SentrySdk.Logger.LogError(
-            "User search: all {0} retries exhausted for query '{1}' — total time {2}ms. Downstream service may be degraded.",
-            maxRetries, query ?? "null", stopwatch.ElapsedMilliseconds);
-        return Results.Json(new { error = "Service temporarily unavailable", retriesExhausted = maxRetries, totalTimeMs = stopwatch.ElapsedMilliseconds }, statusCode: 503);
-    });
+            stopwatch.Stop();
+            SentrySdk.Logger.LogError(
+                "User search: all {0} retries exhausted for query '{1}' — total time {2}ms. Downstream service may be degraded.",
+                maxRetries, query ?? "null", stopwatch.ElapsedMilliseconds);
+            return Results.Json(new { error = "Service temporarily unavailable", retriesExhausted = maxRetries, totalTimeMs = stopwatch.ElapsedMilliseconds }, statusCode: 503);
+        });
+    }
 
     await app.RunAsync();
 
