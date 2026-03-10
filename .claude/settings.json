@@ -1,0 +1,5 @@
+{
+  "projectSettings": {
+    "sre": "# /sre — SRE Autonomous Agent\n\nLis `.claude/agents/sre.md` et exécute ton cycle complet."
+  }
+}

@@ -5,6 +5,8 @@ using Hangfire.PostgreSql;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Sentry;
+using Sentry.OpenTelemetry;
 using System.Security.Claims;
 using Vibora.Games;
 using Vibora.Games.Infrastructure.Services;
@@ -17,6 +19,18 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     builder.AddServiceDefaults();
+
+    // Sentry — error tracking + distributed tracing
+    builder.WebHost.UseSentry(options =>
+    {
+        options.Dsn = builder.Configuration["Sentry:Dsn"] ?? "";
+        options.Environment = builder.Environment.EnvironmentName;
+        options.TracesSampleRate = 1.0;
+        options.SendDefaultPii = false;
+        options.Debug = builder.Environment.IsDevelopment();
+        options.EnableLogs = true;
+        options.UseOpenTelemetry();
+    });
 
     // Initialize Firebase Admin SDK
     var firebaseCredPath = builder.Configuration["Firebase:CredentialsPath"] ?? "firebase-adminsdk-mock.json";
@@ -227,6 +241,57 @@ try
     app.MapGamesEndpoints();
     app.MapNotificationsEndpoints();
     // app.MapCommunicationEndpoints();
+
+    // --- SRE Demo endpoints ---
+    // Healthy endpoint
+    app.MapGet("/api/sre/health-check", () =>
+    {
+        SentrySdk.Logger.LogInfo("SRE health check OK at {0}", DateTime.UtcNow);
+        return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+    });
+
+    // User search endpoint — performance degradation with retry storm
+    app.MapGet("/api/sre/users/search", (string? query) =>
+    {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var retryCount = 0;
+        const int maxRetries = 3;
+
+        while (retryCount < maxRetries)
+        {
+            try
+            {
+                // Simulate unstable downstream service call
+                Thread.Sleep(1200 + retryCount * 800);
+
+                // 70% chance of failure on each attempt
+                if (Random.Shared.NextDouble() < 0.7)
+                {
+                    retryCount++;
+                    SentrySdk.Logger.LogWarning(
+                        "User search: downstream timeout on attempt {0}/{1} for query '{2}' — retrying in {3}ms",
+                        retryCount, maxRetries, query ?? "null", retryCount * 500);
+                    Thread.Sleep(retryCount * 500); // Exponential-ish backoff
+                    continue;
+                }
+
+                stopwatch.Stop();
+                SentrySdk.Logger.LogInfo("User search completed in {0}ms for query '{1}'", stopwatch.ElapsedMilliseconds, query ?? "null");
+                return Results.Ok(new { query, results = new[] { "user1@test.com", "user2@test.com" }, responseTimeMs = stopwatch.ElapsedMilliseconds });
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.Logger.LogError("User search unexpected error: {0}", ex.Message);
+                throw;
+            }
+        }
+
+        stopwatch.Stop();
+        SentrySdk.Logger.LogError(
+            "User search: all {0} retries exhausted for query '{1}' — total time {2}ms. Downstream service may be degraded.",
+            maxRetries, query ?? "null", stopwatch.ElapsedMilliseconds);
+        return Results.Json(new { error = "Service temporarily unavailable", retriesExhausted = maxRetries, totalTimeMs = stopwatch.ElapsedMilliseconds }, statusCode: 503);
+    });
 
     await app.RunAsync();
 
