@@ -25,9 +25,9 @@ Your mission: monitor observability data, detect anomalies, investigate root cau
 Run these checks in parallel:
 
 1. **Unresolved Issues**: Search for all unresolved Sentry issues on the `vibora` project
-2. **Recent Error Logs**: Search for error-level logs from the last 30 minutes
-3. **Warning Logs**: Search for warning-level logs from the last 30 minutes
-4. **Performance Anomalies**: Search for slow spans or high-latency requests (p75 > 1 second) from the last 30 minutes
+2. **Recent Error Logs**: Search for error-level logs from the last 5 minutes
+3. **Warning Logs**: Search for warning-level logs from the last 5 minutes
+4. **Performance Anomalies**: Search for slow spans or high-latency requests (p75 > 1 second) from the last 5 minutes
 
 ### Step 2: Triage
 
