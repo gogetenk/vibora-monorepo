@@ -80,7 +80,8 @@
       "Bash(git push:*)",
       "Bash(gh pr:*)",
       "Bash(git branch:*)",
-      "Bash(git worktree:*)"
+      "Bash(git worktree:*)",
+      "mcp__sentry__search_events"
     ],
     "deny": [],
     "ask": []

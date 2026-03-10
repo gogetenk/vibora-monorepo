@@ -250,7 +250,29 @@ try
         return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
     });
 
-    // User search endpoint — performance degradation with retry storm
+    // Crash endpoint — NullReferenceException (demo scenario 1)
+    app.MapGet("/api/sre/crash", () =>
+    {
+        SentrySdk.Logger.LogError("Crash endpoint triggered — about to throw NullReferenceException");
+        string? value = null;
+        return Results.Ok(value!.Length); // NullReferenceException
+    });
+
+    // Silent bug endpoint — wrong calculation with warning log (demo scenario 2)
+    app.MapGet("/api/sre/calculate-discount", (int price, int quantity) =>
+    {
+        // BUG: discount should be price * quantity * 0.1, but uses addition instead of multiplication
+        var discount = (price + quantity) * 0.1;
+        if (discount > price)
+        {
+            SentrySdk.Logger.LogWarning(
+                "Discount {0} exceeds price {1} for quantity {2} — potential calculation error",
+                discount, price, quantity);
+        }
+        return Results.Ok(new { price, quantity, discount, total = price * quantity - discount });
+    });
+
+    // User search endpoint — performance degradation with retry storm (demo scenario 3)
     app.MapGet("/api/sre/users/search", (string? query) =>
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
