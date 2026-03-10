@@ -272,8 +272,8 @@ try
         return Results.Ok(new { price, quantity, discount, total = price * quantity - discount });
     });
 
-    // User search endpoint — performance degradation with retry storm (demo scenario 3)
-    app.MapGet("/api/sre/users/search", (string? query) =>
+    // User search endpoint — simulates downstream call with retry (demo scenario 3)
+    app.MapGet("/api/sre/users/search", async (string? query, CancellationToken cancellationToken) =>
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var retryCount = 0;
@@ -283,23 +283,28 @@ try
         {
             try
             {
-                // Simulate unstable downstream service call
-                Thread.Sleep(1200 + retryCount * 800);
+                // Simulate downstream service call (non-blocking)
+                await Task.Delay(200 + retryCount * 100, cancellationToken);
 
-                // 70% chance of failure on each attempt
-                if (Random.Shared.NextDouble() < 0.7)
+                // 30% chance of failure on each attempt
+                if (Random.Shared.NextDouble() < 0.3)
                 {
                     retryCount++;
                     SentrySdk.Logger.LogWarning(
                         "User search: downstream timeout on attempt {0}/{1} for query '{2}' — retrying in {3}ms",
-                        retryCount, maxRetries, query ?? "null", retryCount * 500);
-                    Thread.Sleep(retryCount * 500); // Exponential-ish backoff
+                        retryCount, maxRetries, query ?? "null", retryCount * 100);
+                    await Task.Delay(retryCount * 100, cancellationToken);
                     continue;
                 }
 
                 stopwatch.Stop();
                 SentrySdk.Logger.LogInfo("User search completed in {0}ms for query '{1}'", stopwatch.ElapsedMilliseconds, query ?? "null");
                 return Results.Ok(new { query, results = new[] { "user1@test.com", "user2@test.com" }, responseTimeMs = stopwatch.ElapsedMilliseconds });
+            }
+            catch (OperationCanceledException)
+            {
+                SentrySdk.Logger.LogWarning("User search cancelled for query '{0}'", query ?? "null");
+                return Results.StatusCode(499); // Client closed request
             }
             catch (Exception ex)
             {
